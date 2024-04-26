@@ -1,0 +1,26 @@
+#root {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    }
+  
+  .container {
+    flex:1;
+  }
+  
+  footer {
+    margin:auto;
+    padding:10px;
+  }
+  
+
+.input {
+  max-width: 250px;
+  height: 30px;
+  }
+
+.navbar-toggler:focus {
+    text-decoration: none;
+    outline: 0;
+    box-shadow: 0 0 0 0;
+} 
