@@ -33,6 +33,7 @@ export const NavbarReactstrap = () => {
         </NavbarToggler> 
         <Collapse isOpen={isOpen} navbar>
           <Nav className="me-auto" navbar>
+            <NavLink activeclassname="active" to="/">Etusivu</NavLink> 
             <NavLink activeclassname="active" to="/notes/">Notes</NavLink>
             <NavLink activeclassname="active" to="/lomake/">Lomake</NavLink> 
           </Nav>
