@@ -6,7 +6,7 @@ import { Dialog, DialogTitle, DialogContent,
         FormControlLabel as Label,
         TextField as Input, 
         Checkbox } from '@mui/material'
-import { getNotes } from '../yhteydet';
+import { getNotes, addNote, updateNote, deleteNote } from '../yhteydet';
 import Note from '../components/Note'
 
 const Notes = () => {
@@ -25,10 +25,19 @@ const {
   formState: { errors:errors2 } 
   } = useForm();
 
-const handleClickOpen = (clickedNote) => {
+const handleClickOpen = clickedNote => {
   setOpen(true);
   setActiveNote(clickedNote)
-};
+}
+
+const handleClickConfirm = id => {
+  let result = confirm("Haluatko varmasti poistaa muistiinpanon?")
+  console.log('handleClickConfirm,id:',id,',result:',result)
+  deleteNote(id).then(response => {
+    console.log('handleClickConfirm,response:',response)
+    setNotes(notes.filter(note => note.id !== id))
+    })
+  }
 
 const handleClose = () => {
   setOpen(false);
@@ -47,11 +56,23 @@ useEffect(() => reset2(activeNote)
   
 
 const onSubmit = data => {
-  let newNote = {...data,id: notes.length + 1}
-  setNotes(notes.concat(newNote))
-  console.log(newNote)
+  const maxId = Math.max(...notes.map(note => Number(note.id)));
+  let newNote = {...data,id: (maxId + 1).toString() }
+  addNote(newNote).then(responseNote => {
+    setNotes(notes.concat(responseNote))   
+    console.log('onSubmit,responseNote:',responseNote)
+    })
   }
 
+const tallenna = data => {
+  updateNote(data)
+  .then(response => {
+    setNotes(notes.map(note => note.id !== data.id ? note : response.data))
+    console.log("tallenna,response.data: ",response.data)
+    handleClose()
+    })
+  }
+  
 console.log('notes:',notes,'open:',open,'activeNote:',activeNote )    
 
 return (
@@ -59,7 +80,7 @@ return (
     <h1>Notes</h1>
     <p>Here you can find all the notes</p>
     <ul style={{ }}>
-    { notes.map(note => <Note key={note.id} note={note} handleOpen={handleClickOpen}/>) }
+    { notes.map(note => <Note key={note.id} note={note} handleOpen={handleClickOpen} handleConfirm={handleClickConfirm}/>) }
     </ul>  
 
 <form onSubmit={handleSubmit(onSubmit)}>
@@ -91,7 +112,7 @@ control={<Checkbox defaultChecked />} label="Tärkeä"
 <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>Edit Note</DialogTitle>
       <DialogContent>
-        <form onSubmit={handleSubmit2(onSubmit)}>
+        <form onSubmit={handleSubmit2(tallenna)}>
           <Input
             {...register2('content',{required:true})}
             //defaultValue={activeNote.content}
@@ -104,7 +125,7 @@ control={<Checkbox defaultChecked />} label="Tärkeä"
           {errors2.content && <Error>Anna ohjelmointivihje</Error>}
 
           <Label 
-          control={<Checkbox defaultChecked={activeNote.important ? true : false}/>} label="Tärkeä" 
+          control={<Checkbox defaultChecked={activeNote.important}/>} label="Tärkeä" 
           {...register2("important")}
           />
           <DialogActions>

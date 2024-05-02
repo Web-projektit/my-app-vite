@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Lomake from "./pages/Lomake";
 import Notes from "./pages/Notes";
 import Muistiinpano from "./pages/Muistiinpano";
+import Rekisterointi from "./auth/Rekisterointi";
 import Etusivu from "./pages/Etusivu";
 import { NavbarReactstrap as Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/lomake" element={<Lomake/>} />
         <Route path="/notes" element={<Notes/>} />
         <Route path="/notes/:id" element={<Muistiinpano/>} />
+        <Route path="/rekisterointi/" element={<Rekisterointi/>} />
         <Route path="*" element={<h1>404 - Not Found</h1>} />
     </Routes>
     </div>

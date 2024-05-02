@@ -36,6 +36,7 @@ export const NavbarReactstrap = () => {
             <NavLink activeclassname="active" to="/">Etusivu</NavLink> 
             <NavLink activeclassname="active" to="/notes/">Notes</NavLink>
             <NavLink activeclassname="active" to="/lomake/">Lomake</NavLink> 
+            <NavLink activeclassname="active" to="/rekisterointi/">Rekisteröityminen</NavLink> 
           </Nav>
         </Collapse>
       </Navbar>

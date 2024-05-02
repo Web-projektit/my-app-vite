@@ -9,7 +9,7 @@ const styleContent = {
   overflow: 'hidden', 
   textOverflow: 'ellipsis' }
 
-const Note = ({ note,handleOpen }) => {
+const Note = ({ note,handleOpen,handleConfirm }) => {
     return (
       <li key={note.id}>
       <div style={{display:'flex'}}>
@@ -22,7 +22,9 @@ const Note = ({ note,handleOpen }) => {
         onClick={() => handleOpen(note) }
         />
 
-      <FaTrash style={{ color: 'red', cursor: 'pointer' }} />
+      <FaTrash 
+        style={{ color: 'red', cursor: 'pointer' }} 
+        onClick={() => handleConfirm(note.id) }/>
       </div>
       </div>
     </li>
