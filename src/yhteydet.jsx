@@ -1,6 +1,10 @@
 import axios from 'axios'
 let basename = ''
 const url = 'http://localhost:3001/notes'
+const urlRestapi = 'http://localhost:5000/restapi'
+const csrfUrl = urlRestapi + '/getcsrf'
+const signupUrl = urlRestapi + '/register'
+
 
 const getNotes = () => {
     const promise = axios.get(url)
@@ -52,4 +56,7 @@ const deleteNote = id => {
     return promise.then(response => response.json())
     }
 
-export { getNotes, getNote, addNote, updateNote, deleteNote, basename }
+const csrfFetch = () => fetch(csrfUrl, {credentials: "include"})
+
+export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
+         basename, urlRestapi, csrfUrl, signupUrl }
