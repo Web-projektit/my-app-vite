@@ -2,6 +2,12 @@ import styled from 'styled-components';
 import { TextField } from '@mui/material'
 import { Input as Check } from 'reactstrap'
 
+const Otsikko = styled.h2`
+  margin: 0 auto;
+  padding: 1rem 2rem;
+`;
+
+
 const Error = styled.div`
     color: red;
     `;
@@ -25,4 +31,4 @@ const Checkbox = styled(Check)`
     }
     `;    
 
-export { Error, Input, Checkbox }
+export { Otsikko, Error, Input, Checkbox }

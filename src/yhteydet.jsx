@@ -4,6 +4,8 @@ const url = 'http://localhost:3001/notes'
 const urlRestapi = 'http://localhost:5000/restapi'
 const csrfUrl = urlRestapi + '/getcsrf'
 const signupUrl = urlRestapi + '/register'
+const confirmUrl = urlRestapi + '/confirm'
+const closeUrl = urlRestapi + '/logout'
 
 
 const getNotes = () => {
@@ -58,5 +60,12 @@ const deleteNote = id => {
 
 const csrfFetch = () => fetch(csrfUrl, {credentials: "include"})
 
+const confirmFetch = () => 
+    fetch(confirmUrl, {credentials: "include"})
+    .then(response => response.text())  
+
+let closeFetch = () => fetch(closeUrl,{credentials:'include'})
+
+
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
-         basename, urlRestapi, csrfUrl, signupUrl }
+         basename, urlRestapi, csrfUrl, signupUrl, confirmFetch, closeFetch }
