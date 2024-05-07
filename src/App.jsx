@@ -45,7 +45,7 @@ const App = () => {
       setAuthTokens(data);
       }
 
-      
+     
   const setConfirm = data => {
     console.log('setConfirm:',data)
     if (data) localStorage.setItem("confirm", JSON.stringify(data));
@@ -53,8 +53,6 @@ const App = () => {
     setAuthConfirm(data);
     }
   
-
-
   console.log('rendering App')
   
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav } from 'reactstrap';
 import { NavLink } from './Navbar.styles';
+import { PrivateLink,PublicLink,LoginCloseButton } from '../auth/PrivateLink'
 import { FaBars, FaTimes } from 'react-icons/fa'
 /*
 Tässä on käytetty reactstrapin Navbar-ratkaisua sen yksinkertaisuuden vuoksi.
@@ -34,9 +35,9 @@ export const NavbarReactstrap = () => {
         <Collapse isOpen={isOpen} navbar>
           <Nav className="me-auto" navbar>
             <NavLink activeclassname="active" to="/">Etusivu</NavLink> 
-            <NavLink activeclassname="active" to="/notes/">Notes</NavLink>
-            <NavLink activeclassname="active" to="/lomake/">Lomake</NavLink> 
-            <NavLink activeclassname="active" to="/rekisterointi/">Rekisteröityminen</NavLink> 
+            <PrivateLink activeclassname="active" to="/notes/">Notes</PrivateLink>
+            <PublicLink activeclassname="active" to="/lomake/">Lomake</PublicLink> 
+            <LoginCloseButton/>
           </Nav>
         </Collapse>
       </Navbar>

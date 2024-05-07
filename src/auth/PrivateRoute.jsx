@@ -43,7 +43,7 @@ const Private = ({ children }) => {
            Huom. Jos viimeksi on oltu unconfirmed-sivulla, se säilyisi
            location-objektissa, vaikka sen jälkeen olisi poistuttu Poistu-painikkeesta,
            ellei tällöin setToken-funktiossa olisi tyhjennetty locationin state. */
-          return <Navigate to="/login" state={{ location }} replace={true}/>
+          return <Navigate to="/kirjautuminen" state={{ location }} replace={true}/>
         }       
     }
 

@@ -4,6 +4,7 @@ const url = 'http://localhost:3001/notes'
 const urlRestapi = 'http://localhost:5000/restapi'
 const csrfUrl = urlRestapi + '/getcsrf'
 const signupUrl = urlRestapi + '/register'
+const loginUrl = urlRestapi + '/login'
 const confirmUrl = urlRestapi + '/confirm'
 const closeUrl = urlRestapi + '/logout'
 
@@ -64,8 +65,31 @@ const confirmFetch = () =>
     fetch(confirmUrl, {credentials: "include"})
     .then(response => response.text())  
 
-let closeFetch = () => fetch(closeUrl,{credentials:'include'})
+const closeFetch = () => fetch(closeUrl,{credentials:'include'})
+
+let loginFetch = (data,csrfToken,next) => {
+    /* Huom. toimii myös ilman kauttaviivojen muuntamista
+    next = encodeURIComponent(next) */
+    let url = loginUrl+'?next='+next
+    console.log("loginFetch,url:"+url) 
+    return fetch(url,{
+        method:'POST',
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json"
+            },
+        credentials:'include',
+        // mode: 'cors',
+        body:JSON.stringify(data)})
+    .then(response => {
+        console.log('loginFetch,response:',response.ok,response.status,response.url,response.redirected)
+        return response.text()
+        })  
+    .catch(e => {
+        console.error('loginFetch,e:',String(e))
+        })    
+    }
 
 
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
-         basename, urlRestapi, csrfUrl, signupUrl, confirmFetch, closeFetch }
+         basename, urlRestapi, csrfUrl, signupUrl, confirmFetch, loginFetch, closeFetch }

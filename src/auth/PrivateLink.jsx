@@ -1,6 +1,6 @@
 import { useNavigate,useLocation  } from "react-router-dom"
 import { useAuth } from "./Auth"
-import { NavItem as NavLink,Button } from "./Navbar.style"
+import { NavLink,Button } from "../components/Navbar.styles"
 
 export function PrivateLink({ ...rest }) {
   const { authTokens } = useAuth();
@@ -16,7 +16,7 @@ export function PublicLink({ ...rest }) {
     //console.log("PublicLink,authTokens:"+authTokens+",sessionStorage:"+sessionStorage.tokens);
     return (
       !authTokens ?  
-      <NavLink style={{ color:'#aaa' }} {...rest}/> : ''
+      <NavLink {...rest}/> : ''
     );
   }
 
@@ -42,7 +42,7 @@ export function LoginCloseButton() {
       }
 
     /* Huom. tämä toimii Kirjaudu-painikkeen napsautuksesta */  
-    const login = () => navigate('/login',{})
+    const login = () => navigate('/kirjautuminen',{})
                 
     return (
       authTokens ?   
