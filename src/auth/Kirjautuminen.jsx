@@ -152,7 +152,7 @@ const Kirjautuminen =  () => {
       {errors.password?.type === 'tunnusvirhe' && <Error>{errors.password.message}</Error>} 
       {errors.password?.type === 'palvelinvirhe' && <Error>{errors.password.message}</Error>} 
       <Button type="submit" variant="outlined"
-      >Tallenna
+      >Kirjaudu
       </Button>
      
       </form>

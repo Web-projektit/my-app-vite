@@ -59,13 +59,18 @@ const deleteNote = id => {
     return promise.then(response => response.json())
     }
 
-const csrfFetch = () => fetch(csrfUrl, {credentials: "include"})
+const csrfFetch = () => fetch(csrfUrl, {
+    credentials: "include"
+    })
 
 const confirmFetch = () => 
     fetch(confirmUrl, {credentials: "include"})
     .then(response => response.text())  
 
-const closeFetch = () => fetch(closeUrl,{credentials:'include'})
+const closeFetch = (token) => fetch(closeUrl,{
+    credentials:'include',
+    authentication:`bearer ${token}`
+    })
 
 let loginFetch = (data,csrfToken,next) => {
     /* Huom. toimii myös ilman kauttaviivojen muuntamista

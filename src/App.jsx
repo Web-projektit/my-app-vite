@@ -33,7 +33,7 @@ const App = () => {
       else {
         //axios.get(closeUrl,{withCredentials:true});
         //fetch(closeUrl,{credentials:'include'})
-        closeFetch();
+        closeFetch(authTokens);
         sessionStorage.removeItem("tokens");
         /* 
         Pyritää estetään kirjautuminen samalle sivulle, jolta poistuttiin
