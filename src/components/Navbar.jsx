@@ -3,6 +3,8 @@ import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav } from 'reactstrap';
 import { NavLink } from './Navbar.styles';
 import { PrivateLink,PublicLink,LoginCloseButton } from '../auth/PrivateLink'
 import { FaBars, FaTimes } from 'react-icons/fa'
+import Logo from "../img/omniamusta_tausta.png";
+
 /*
 Tässä on käytetty reactstrapin Navbar-ratkaisua sen yksinkertaisuuden vuoksi.
 Siinä on kuitenkin seuraavat puutteet:
@@ -28,14 +30,14 @@ export const NavbarReactstrap = () => {
   return (
     <div>
       <Navbar color="light" light expand="md">
-        <NavbarBrand href="/">Tutorial</NavbarBrand>
+        <NavbarBrand href="/"><img src={Logo} alt="Logo" style={{ height: '40px' }}></img></NavbarBrand>
         <NavbarToggler onClick={toggle}>
         {isOpen ? <FaTimes /> : <FaBars />}
         </NavbarToggler> 
         <Collapse isOpen={isOpen} navbar>
-          <Nav className="me-auto" navbar>
+          <Nav className="mr-auto" navbar>
             <NavLink activeclassname="active" to="/">Etusivu</NavLink> 
-            <PrivateLink activeclassname="active" to="/notes/">Notes</PrivateLink>
+            <PrivateLink activeclassname="active" to="/notes/">Ohjelmointivihjeet</PrivateLink>
             <PublicLink activeclassname="active" to="/lomake/">Lomake</PublicLink> 
             <LoginCloseButton/>
           </Nav>

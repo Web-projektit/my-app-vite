@@ -63,7 +63,7 @@ const App = () => {
     <Routes>
         <Route exact path="/" element={<Etusivu/>} />
         <Route path="/lomake" element={<Lomake/>} />
-        <Route path="/notes" element={<Notes/>} />
+        <Route path="/notes" element={<Private><Notes/></Private>} />
         <Route path="/notes/:id" element={<Muistiinpano/>} />
         <Route path="/rekisterointi/" element={<Rekisterointi/>} />
         <Route path="/kirjautuminen/" element={<Kirjautuminen/>} />

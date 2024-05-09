@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { TextField } from '@mui/material'
+import { TextField, Button as Painike } from '@mui/material'
 import { Input as Check } from 'reactstrap'
 
 const Otsikko = styled.h2`
@@ -31,4 +31,11 @@ const Checkbox = styled(Check)`
     }
     `;    
 
-export { Otsikko, Error, Input, Checkbox }
+const Button = styled(Painike)`
+    && {
+    display: block;    
+    margin: 10px 20px 10px auto;
+    }
+    `;    
+    
+export { Otsikko, Error, Input, Checkbox, Button }

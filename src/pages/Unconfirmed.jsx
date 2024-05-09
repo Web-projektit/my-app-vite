@@ -2,7 +2,6 @@
    sähköpostiosoitevahvistuslinkin uudelleen lähetykseen. */
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-// import { Button } from "../components/AuthForm";
 import { useAuth } from "../auth/Auth";
 
 const Unconfirmed = () => {
@@ -33,13 +32,12 @@ let viesti = !message &&
 
 return (
     <div className="page-header">
-    <h1>Hei!</h1>
     <h3>{otsikko}</h3>
     <p>{viesti}</p>    
     <p>Tarvitsetko uuden vahvistuslinkin?</p>    
     <Link to="/confirm">Lähetä uusi sähköpostiosoitteen vahvistuslinkki</Link>
-</div>
-)
+    </div>
+    )
 }
 
 export default Unconfirmed;

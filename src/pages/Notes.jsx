@@ -1,12 +1,12 @@
 import { useState,useEffect } from 'react';
 import { useForm } from "react-hook-form"
-import { Error } from '../components/Styles'
+import { Error, Button } from '../components/Styles'
 import { Dialog, DialogTitle, DialogContent, 
-        DialogActions, Button, 
+        DialogActions, 
         FormControlLabel as Label,
-        TextField as Input, 
-        Checkbox } from '@mui/material'
-import { getNotes, addNote, updateNote, deleteNote } from '../yhteydet';
+        Checkbox,TextField as Input } from '@mui/material'
+        import { TextareaAutosize as Textarea } from '@mui/base/TextareaAutosize'
+        import { getNotes, addNote, updateNote, deleteNote } from '../yhteydet';
 import Note from '../components/Note'
 
 const Notes = () => {
@@ -17,7 +17,7 @@ const [activeNote, setActiveNote] = useState({});
 /* f2 = useForm() */
 /* Useamman lomakekontekstin määrittely ja kutsu f2.reset(), 
    tai nimeämälä funktio erikseen ja kutsu reset2() */
-const {register,handleSubmit,formState:{ errors }} = useForm()
+const {register,handleSubmit,reset,formState:{ errors }} = useForm()
 const {
   register:register2,
   handleSubmit:handleSubmit2,
@@ -54,8 +54,25 @@ useEffect(() => reset2(activeNote)
 /* eslint-disable-next-line react-hooks/exhaustive-deps */
 ,[activeNote])    
   
+const jokeAPI = 'https://v2.jokeapi.dev/joke/Programming'
+
+useEffect(() => {
+  fetch(jokeAPI) 
+    .then(response => response.json())
+    .then(data => {
+      console.log('data:',data.joke)
+      let teksti = data.joke ? data.joke : 'Ohjelmointivihje'
+      reset({'content':teksti})
+      
+      })
+/* eslint-disable-next-line react-hooks/exhaustive-deps */
+}, []);
+
 
 const onSubmit = data => {
+  /* Huom. Jos tietokanta kasvaa ohjelman sisällä alusta alkaen, 
+     niid maxId:n laskeminen ei ole tarpeen, sillä se on 
+     viimeisimmän rivin arvo. */
   const maxId = Math.max(...notes.map(note => Number(note.id)));
   let newNote = {...data,id: (maxId + 1).toString() }
   addNote(newNote).then(responseNote => {
@@ -77,21 +94,24 @@ console.log('notes:',notes,'open:',open,'activeNote:',activeNote )
 
 return (
 <div>
-    <h1>Notes</h1>
-    <p>Here you can find all the notes</p>
+    <h1>Ohjelmointivihjeitä</h1>
     <ul style={{ }}>
     { notes.map(note => <Note key={note.id} note={note} handleOpen={handleClickOpen} handleConfirm={handleClickConfirm}/>) }
     </ul>  
 
 <form onSubmit={handleSubmit(onSubmit)}>
-<Input 
-  label="Ohjelmointivihje"
+<Input
   variant="outlined"
   margin="normal"
-  fullWidth
+  fullwidth="true"
+  label="Ohjelmointivihje"
   InputLabelProps={{ shrink: true }}
-  defaultValue="Ohjelmointivihje" 
+  autoFocus
+  multiline
+  rows={4}
+  //defaultValue={defaultValue}
   {...register("content",{required:true})} 
+  style={{ width: '100%', padding: '4px'}}
 />  
 {errors.content && <Error>Anna ohjelmointivihje</Error>}
 
@@ -103,7 +123,6 @@ control={<Checkbox defaultChecked />} label="Tärkeä"
 <Button 
   type="submit" 
   variant="outlined"
-  style={{ display:'block',marginTop: 10, marginLeft: 'auto',marginRight: 40}}
   >Lisää
 </Button>
 </form>
@@ -113,7 +132,7 @@ control={<Checkbox defaultChecked />} label="Tärkeä"
       <DialogTitle>Edit Note</DialogTitle>
       <DialogContent>
         <form onSubmit={handleSubmit2(tallenna)}>
-          <Input
+          <Textarea
             {...register2('content',{required:true})}
             //defaultValue={activeNote.content}
             variant="outlined"
@@ -121,6 +140,8 @@ control={<Checkbox defaultChecked />} label="Tärkeä"
             fullWidth
             label="Content"
             autoFocus
+            maxRows={4}
+            style={{ width: '100%', padding: '4px'}}
           />
           {errors2.content && <Error>Anna ohjelmointivihje</Error>}
 
@@ -128,7 +149,7 @@ control={<Checkbox defaultChecked />} label="Tärkeä"
           control={<Checkbox defaultChecked={activeNote.important}/>} label="Tärkeä" 
           {...register2("important")}
           />
-          <DialogActions>
+          <DialogActions style={{  maxWidth: '200px', marginLeft: 'auto' }}>
             <Button onClick={handleClose} color="primary">
               Cancel
             </Button>

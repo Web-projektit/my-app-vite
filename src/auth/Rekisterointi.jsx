@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from "react-hook-form"
-import { Error } from '../components/Styles'
-import { Button, TextField as Input } from '@mui/material'
+import { Error, Button } from '../components/Styles'
+import { TextField as Input } from '@mui/material'
 import { csrfFetch, signupUrl } from '../yhteydet'
 
 const Rekisterointi = () => {
@@ -155,11 +155,9 @@ const rekisterointi = data => {
       {/* Huom. salasanan validointi palvelimella password-kentälle. */}
       {errors.password?.type === 'palvelinvirhe' && <Error>{errors.password.message}</Error>} 
 
-  <Button 
-    type="submit" 
-    variant="outlined"
-    //style={{ marginTop: 80 }}
-    >Tallenna</Button>
+  <Button type="submit" variant="outlined">
+  Rekisteröidy
+  </Button>
   </form>
   </>
   )

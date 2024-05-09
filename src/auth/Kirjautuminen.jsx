@@ -1,9 +1,7 @@
 import { useState,useEffect,useRef } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
-// import axios from 'axios';
-// import logoImg from "../img/omnia_logo.png";
-import { Button, TextField as Input } from '@mui/material'
-import { Otsikko, Error } from "../components/Styles";
+import { TextField as Input } from '@mui/material'
+import { Otsikko, Error, Button } from "../components/Styles";
 import { useForm } from "react-hook-form";
 import { useAuth } from "./Auth";
 import { csrfFetch,loginFetch } from "../yhteydet"
@@ -45,11 +43,11 @@ const Kirjautuminen =  () => {
       const searchParams = new URLSearchParams(window.location.search)
       const next = searchParams.get('next','') 
       loginFetch(data,csrfToken.current,next)
-      .then(data => {
-        const dataObj = JSON.parse(data)
+      .then(dataObj => {
+        //const dataObj = JSON.parse(data)
         console.log(`kirjautuminen,response data:`,dataObj)
         if (dataObj.ok) {
-          setAuthTokens('OK');
+          setAuthTokens(dataObj.token);
           setLoggedIn(true);
           /* Huom. Tässä ylläpidetään käyttäjän vahvistustilaa. */
           if (dataObj.confirmed) setAuthConfirm('CONFIRMED')
@@ -73,24 +71,6 @@ const Kirjautuminen =  () => {
       })
   }
 
- 
-  /*
-  function axiosLogin(data) {
-      axios.post("http://localhost:5000/reactapi/signin",data).then(result => {
-      console.log(`result.status:${result.status}`)
-      if (result.status === 200 && result.data === 'OK') {
-        console.log('post result:',result.data)
-        setAuthTokens(result.data);
-        setLoggedIn(true);
-      } else {
-          setError(
-          'password',
-          {type: "palvelinvirhe"}
-          )
-      }
-    }).catch(e => {setError('apiError',{ message:e })})
-  }
-  */
   const { state } = useLocation()
   console.log(`Login,message:${ilmoitus.message},loggedIn:${loggedIn}`)
   if (loggedIn && !ilmoitus.message) {
@@ -101,14 +81,13 @@ const Kirjautuminen =  () => {
     return <Navigate to={to} replace={true} />
   }
 
-  if (ilmoitus.ok === 'OK' && ilmoitus.message) return (
+  if (ilmoitus.ok && ilmoitus.message) return (
     <div>
     <h2>Rekisteröityminen onnistui.</h2>
     <p>{ilmoitus.message}</p>
     </div>
     )
-
-  /* Huom. Tässä tarvitaan joko painike tai ohjaus vahvistussivulle */  
+    
   if (ilmoitus.ok === 'Virhe') return (
     <div>
     <h2>Sähköpostiosoitteen vahvistaminen epäonnistui.</h2>
@@ -120,6 +99,7 @@ const Kirjautuminen =  () => {
   return (
     <>
       {/*<Logo src={logoImg} />*/}
+      {state?.location.pathname === '/unconfirmed' && <p>Kirjaudu ensin</p>}
       <Otsikko>Kirjautuminen</Otsikko>
       {/* Huom. handleSubmit ei välttämättä toimi jos form on Form-komponentti */}
       <form onSubmit={handleSubmit(kirjautuminen)}>
@@ -151,13 +131,13 @@ const Kirjautuminen =  () => {
       {errors.password?.type === 'pattern'  && <Error>Virheellinen salasana</Error>}
       {errors.password?.type === 'tunnusvirhe' && <Error>{errors.password.message}</Error>} 
       {errors.password?.type === 'palvelinvirhe' && <Error>{errors.password.message}</Error>} 
-      <Button type="submit" variant="outlined"
-      >Kirjaudu
+      <Button type="submit" variant="outlined">
+      Kirjaudu
       </Button>
-     
       </form>
-      <br></br>
+      <div>
       <Link to="/rekisterointi">Et ole rekisteröitynyt vielä?</Link>    
+      </div>
   </>
   )
 }

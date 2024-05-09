@@ -59,23 +59,33 @@ const deleteNote = id => {
     return promise.then(response => response.json())
     }
 
-const csrfFetch = () => fetch(csrfUrl, {
-    credentials: "include"
-    })
+const csrfFetch = () => fetch(csrfUrl, {credentials: "include"})
 
-const confirmFetch = () => 
-    fetch(confirmUrl, {credentials: "include"})
-    .then(response => response.text())  
+const confirmFetch = (token) => 
+    fetch(confirmUrl,{
+        credentials:'include',
+        headers:{"authorization":`bearer ${token}`}
+        })
+    .then(response => {
+        if (!response.ok) {
+          throw new Error(`Unauthorized,status:${response.status}`);
+          }
+        return response.text();
+      })
+    .catch(e => {
+        console.error('confirmFetch:',String(e))
+        throw e
+        })
 
 const closeFetch = (token) => fetch(closeUrl,{
     credentials:'include',
-    authentication:`bearer ${token}`
+    headers:{"authorization":`bearer ${token}`}
     })
 
 let loginFetch = (data,csrfToken,next) => {
     /* Huom. toimii myös ilman kauttaviivojen muuntamista
     next = encodeURIComponent(next) */
-    let url = loginUrl+'?next='+next
+    let url = next ? loginUrl+'?next='+next : loginUrl
     console.log("loginFetch,url:"+url) 
     return fetch(url,{
         method:'POST',
@@ -84,14 +94,20 @@ let loginFetch = (data,csrfToken,next) => {
             "Content-Type": "application/json"
             },
         credentials:'include',
-        // mode: 'cors',
         body:JSON.stringify(data)})
     .then(response => {
         console.log('loginFetch,response:',response.ok,response.status,response.url,response.redirected)
-        return response.text()
+        if (!response.ok) {
+            throw new Error('Network response was not ok')
+          }
+        const authHeader = response.headers.get('Authorization')
+        const token = authHeader ? authHeader.split(' ')[1] : null;
+        console.log('loginFetch,Authorization header:',authHeader,'token:',token) 
+        return response.json().then(data => ({...data,token:token}))
         })  
-    .catch(e => {
-        console.error('loginFetch,e:',String(e))
+    .catch(error=> {
+        console.error('loginFetch:',error)
+        throw error
         })    
     }
 
