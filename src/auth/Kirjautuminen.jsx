@@ -102,7 +102,7 @@ const Kirjautuminen =  () => {
       {state?.location.pathname === '/unconfirmed' && <p>Kirjaudu ensin</p>}
       <Otsikko>Kirjautuminen</Otsikko>
       {/* Huom. handleSubmit ei välttämättä toimi jos form on Form-komponentti */}
-      <form onSubmit={handleSubmit(kirjautuminen)}>
+      <form onSubmit={handleSubmit(kirjautuminen)} style={{ maxWidth: '600px' }}>
       {errors.apiError && <Error>{errors.apiError.message}</Error>}  
       <Input 
       label="Sähköpostiosoite"
@@ -135,7 +135,8 @@ const Kirjautuminen =  () => {
       Kirjaudu
       </Button>
       </form>
-      <div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <Link to="/uusisalasana">Unohtuiko salasana?</Link>      
       <Link to="/rekisterointi">Et ole rekisteröitynyt vielä?</Link>    
       </div>
   </>

@@ -10,6 +10,8 @@ import Confirmed from "./pages/Confirmed";
 import Unconfirmed from "./pages/Unconfirmed";
 import Rekisterointi from "./auth/Rekisterointi";
 import Kirjautuminen from "./auth/Kirjautuminen";
+import Uusisalasana from "./auth/Uusisalasana";
+import Resetpassword from "./auth/Resetpassword";
 import Etusivu from "./pages/Etusivu";
 import { NavbarReactstrap as Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
@@ -68,6 +70,8 @@ const App = () => {
         <Route path="/rekisterointi/" element={<Rekisterointi/>} />
         <Route path="/kirjautuminen/" element={<Kirjautuminen/>} />
         <Route path="/confirmed" element={<Confirmed/>}/>
+        <Route path="/uusisalasana" element={<Uusisalasana/>}/>
+        <Route path="/reset_password" element={<Resetpassword/>}/>
         <Route path="/confirm" element={<Private><Confirm/></Private>}/>
         <Route path="/unconfirmed" element={<Private><Unconfirmed/></Private>}/>
         <Route path="*" element={<h1>404 - Not Found</h1>} />

@@ -7,7 +7,8 @@ const signupUrl = urlRestapi + '/register'
 const loginUrl = urlRestapi + '/login'
 const confirmUrl = urlRestapi + '/confirm'
 const closeUrl = urlRestapi + '/logout'
-
+const uusisalasanaUrl = urlRestapi + '/reset'
+const resetPasswordUrl = urlRestapi + '/reset_password'
 
 const getNotes = () => {
     const promise = axios.get(url)
@@ -82,7 +83,7 @@ const closeFetch = (token) => fetch(closeUrl,{
     headers:{"authorization":`bearer ${token}`}
     })
 
-let loginFetch = (data,csrfToken,next) => {
+const loginFetch = (data,csrfToken,next) => {
     /* Huom. toimii myös ilman kauttaviivojen muuntamista
     next = encodeURIComponent(next) */
     let url = next ? loginUrl+'?next='+next : loginUrl
@@ -111,6 +112,55 @@ let loginFetch = (data,csrfToken,next) => {
         })    
     }
 
+const uusisalasanaFetch = (data,csrfToken) => {
+    console.log("uusisalasanaFetch,url:"+uusisalasanaUrl) 
+    return fetch(uusisalasanaUrl,{
+        method:'POST',
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json"
+            },
+        credentials:'include',
+        body:JSON.stringify(data)})
+    .then(response => {
+        console.log('uusisalasanaFetch,response:',response.ok,response.status,response.url,response.redirected)
+        if (!response.ok) {
+            throw new Error('Network response was not ok')
+            }
+        return response.json()
+        })  
+    .catch(error=> {
+        console.error('uusisalasanaFetch:',error)
+        throw error
+        })    
+    }
+
+    const resetPasswordFetch = (data,csrfToken,token) => {
+        console.log("resetFetch,url:"+resetPasswordUrl) 
+        let url = resetPasswordUrl+'/'+token
+        return fetch(url,{
+            method:'POST',
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+                },
+            credentials:'include',
+            body:JSON.stringify(data)})
+        .then(response => {
+            console.log('resetPasswordFetch,response:',response.ok,response.status,response.url,response.redirected)
+            if (!response.ok) {
+                throw new Error('Network response was not ok')
+                }
+            return response.json()
+            })  
+        .catch(error=> {
+            console.error('resetPasswordFetch:',error)
+            throw error
+            })    
+        }
+    
+    
 
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
-         basename, urlRestapi, csrfUrl, signupUrl, confirmFetch, loginFetch, closeFetch }
+         basename, urlRestapi, csrfUrl, signupUrl, confirmFetch, loginFetch, 
+         uusisalasanaFetch, resetPasswordFetch, closeFetch }
