@@ -159,8 +159,58 @@ const uusisalasanaFetch = (data,csrfToken) => {
             })    
         }
     
-    
+import { useState, useEffect, useCallback } from 'react';
 
+function useFormSubmit(url, authToken) {
+    const [csrfToken, setCsrfToken] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [data, setData] = useState(null);
+    const fetchCsrfUrl = csrfUrl
+    
+    // Fetch CSRF token
+    useEffect(() => {  
+      fetch(fetchCsrfUrl, { credentials: 'include' }) // Ensure cookies are sent
+        .then(response => setCsrfToken(response.headers.get("X-CSRFToken")))
+        .catch(err => {
+            setError('Failed to fetch CSRF token');
+            console.error(err);
+            });
+      }, [fetchCsrfUrl])
+
+    // Function to submit data with CSRF token
+    const onsubmit = data => {
+        const header = (authToken) ? { 'Authorization': `Bearer ${authToken}` } : {}
+        setIsLoading(true);
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                "Content-Type": 'application/json',
+                "X-CSRFToken": csrfToken, 
+                ...header
+            },
+            body: JSON.stringify(data),
+            credentials: 'include' // Include cookies if needed for sessions
+        })
+        .then(response => response.json())
+        .then(data => {
+            setData(data);
+            setError(null);
+        })
+        .catch(err => {
+            setError('Failed to submit data');
+            console.error(err);
+        })
+        .finally(() => {
+            setIsLoading(false);
+        });
+    }
+    const submitData = useCallback(onsubmit, [csrfToken, url, authToken]);
+
+    return { submitData, isLoading, error, data };
+}
+
+          
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
          basename, urlRestapi, csrfUrl, signupUrl, confirmFetch, loginFetch, 
-         uusisalasanaFetch, resetPasswordFetch, closeFetch }
+         uusisalasanaFetch, resetPasswordFetch, closeFetch, useFormSubmit }

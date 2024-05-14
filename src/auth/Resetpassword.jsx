@@ -47,35 +47,35 @@ const Resetpassword = () => {
       const queryParams = new URLSearchParams(location.search);
       const token = queryParams.get('token')  
       resetPasswordFetch(data,csrfToken.current,token)
-      .then(dataObj => {
+      .then( data => {
         //const dataObj = JSON.parse(data)
-        console.log(`uusisalasana,response dataObj:`,dataObj)
-        if (dataObj.ok) {
-            setIlmoitus(dataObj)
+        console.log(`uusisalasana,response data:`,data)
+        if (data.status === 'ok') {
+            setIlmoitus(data)
             } 
         else {  
           //const dataObj = JSON.parse(dataObj)
-          console.log("dataObj:",dataObj)
+          console.error("data:",data)
           /* Huom. Palvelinvirheissä on virhe:, lomakkeen validointivirheissä ei.*/
-          if (dataObj.virhe?.includes('csrf')){
-            console.error("csrf-virhe,message:",dataObj.virhe)
+          if (data.message?.includes('csrf')){
+            console.error("csrf-virhe,message:",data.message)
             setError('password2',{type: "palvelinvirhe",message:'csfr-virhe' })
             }
-          else if (dataObj.errors){
+          else if (data.errors){
             //setError('password2',{type: "tunnusvirhe",message:'Tunnukset ovat jo käytössä'})
-            console.error('dataObj.errors:',dataObj.errors)
-            setErrors(dataObj.errors)
+            console.error('data.errors:',data.errors)
+            setErrors(data.errors)
             }
           else {  
-            console.error('dataObj.virhe,message:',dataObj.virhe)
-            setError('password2',{type: "tunnusvirhe",message: dataObj.virhe})
+            console.error('data.message:',data.message)
+            setError('password2',{type: "tunnusvirhe",message: data.message})
           }
         }})
       .catch(e => {setError('apiError',{ message:e })})
     }
   
 
-  if (ilmoitus.ok && ilmoitus.message) {
+  if (ilmoitus.status == 'ok' && ilmoitus.message) {
     return (
     <div>
     <h2>Salasanan uusiminen onnistui.</h2>
@@ -87,7 +87,7 @@ const Resetpassword = () => {
     
   return (
     <>
-      {ilmoitus?.virhe && <Error>{ilmoitus.message}</Error>}
+      {ilmoitus?.status !== 'ok' && <Error>{ilmoitus.message}</Error>}
       <Otsikko>Salasanan uusiminen</Otsikko>
       {/* Huom. handleSubmit ei välttämättä toimi jos form on Form-komponentti */}
       <form onSubmit={handleSubmit(uusisalasana)} style={{ maxWidth: '600px' }}>
