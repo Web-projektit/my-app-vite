@@ -1,34 +1,15 @@
-import { useState,useEffect,useRef } from "react";
-import { Link,useLocation } from "react-router-dom";
+import { useRef } from "react";
+import { Link } from "react-router-dom";
 import { TextField as Input } from '@mui/material'
 import { Otsikko, Error, Button } from "../components/Styles";
 import { useForm } from "react-hook-form";
-import { csrfFetch,resetPasswordFetch } from "../yhteydet"
+import { csrfUrl,resetPasswordUrl,useFormSubmit } from "../yhteydet"
 
 const Resetpassword = () => {
-  const [ilmoitus, setIlmoitus] = useState({});
   const { register, handleSubmit, setError, clearErrors, watch, formState: { errors } } = useForm();
-  const location = useLocation();
   const password = useRef({});
   password.current = watch("password", "");
-  const csrfToken = useRef('');
     
-  useEffect(() => {
-    console.log(`useEffect`)
-    csrfFetch()
-    .then(response => {
-      //response.headers.forEach((v,i) => console.log(i));
-      console.log(...response.headers);
-      csrfToken.current = response.headers.get("X-CSRFToken");
-    })
-    .catch(err => {
-      console.log(err);
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  console.log('Resetpassword,csrfToken:',csrfToken.current)
-  
   const setErrors = errors => {
     for (let kentta in errors) {
       console.log(`setErrors, ${kentta}:${errors[kentta]}`)
@@ -41,6 +22,40 @@ const Resetpassword = () => {
     if (errors[field]?.type === 'palvelinvirhe') clearErrors(field)
     }
 
+  const { submitData, isLoading, error, data } = useFormSubmit(resetPasswordUrl,csrfUrl)
+  console.log("Resetpassword,isLoading:",isLoading,"error:",error,"data:",data)
+
+  if (error) {
+    setError('apiError',{ message:error })
+    }
+  
+  else if (data?.status === 'ok' && data.message) {
+    return (
+      <div>
+      <h2>Salasanan uusiminen onnistui.</h2>
+      <p>{data.message}</p>
+      <Link to="/kirjautuminen">Kirjaudu palveluun</Link>
+      </div>
+      )
+    }
+
+  else if (data?.status === 'virhe' && data.message.includes('csrf')) {
+    console.error("csrf-virhe,message:",data.message)
+    setError('password2',{type: "palvelinvirhe",message:data.message })
+    }
+
+  else if (data?.status === 'virhe' && data.errors){
+      console.error('data.errors:',data.errors)
+      setErrors(data.errors)
+      }
+
+  else if (data?.status === 'virhe') {  
+        console.error('data.message:',data.message)
+        setError('password2',{type: "tunnusvirhe",message: data.message})
+      }
+  
+  
+  /*
   const uusisalasana = data => {
       console.log("uusisalasana,csfrToken:",csrfToken.current)    
       console.log("uusisalasana,data:",data)
@@ -56,13 +71,11 @@ const Resetpassword = () => {
         else {  
           //const dataObj = JSON.parse(dataObj)
           console.error("data:",data)
-          /* Huom. Palvelinvirheissä on virhe:, lomakkeen validointivirheissä ei.*/
-          if (data.message?.includes('csrf')){
+           if (data.message?.includes('csrf')){
             console.error("csrf-virhe,message:",data.message)
             setError('password2',{type: "palvelinvirhe",message:'csfr-virhe' })
             }
           else if (data.errors){
-            //setError('password2',{type: "tunnusvirhe",message:'Tunnukset ovat jo käytössä'})
             console.error('data.errors:',data.errors)
             setErrors(data.errors)
             }
@@ -73,21 +86,12 @@ const Resetpassword = () => {
         }})
       .catch(e => {setError('apiError',{ message:e })})
     }
-  
-
-  if (ilmoitus.status == 'ok' && ilmoitus.message) {
-    return (
-    <div>
-    <h2>Salasanan uusiminen onnistui.</h2>
-    <p>{ilmoitus.message}</p>
-    <Link to="/kirjautuminen">Kirjaudu palveluun</Link>
-    </div>
-    )
-    }
-    
+    */
+  const uusisalasana = data => submitData(data)
+       
   return (
     <>
-      {ilmoitus?.status !== 'ok' && <Error>{ilmoitus.message}</Error>}
+      {data?.status == 'virhe' && <Error>{data.message}</Error>}
       <Otsikko>Salasanan uusiminen</Otsikko>
       {/* Huom. handleSubmit ei välttämättä toimi jos form on Form-komponentti */}
       <form onSubmit={handleSubmit(uusisalasana)} style={{ maxWidth: '600px' }}>
@@ -125,7 +129,7 @@ const Resetpassword = () => {
       {errors.password2?.type === 'tunnusvirhe' && <Error>{errors.password2.message}</Error>} 
       {/* Huom. salasanan validointi palvelimella password-kentälle. */}
       {errors.password?.type === 'palvelinvirhe' && <Error>{errors.password.message}</Error>} 
-    <Button type="submit" variant="outlined">
+    <Button type="submit" variant="outlined" disabled={isLoading}>
       Tallenna salasana
     </Button>
     </form>

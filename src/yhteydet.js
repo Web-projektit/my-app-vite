@@ -161,13 +161,13 @@ const uusisalasanaFetch = (data,csrfToken) => {
     
 import { useState, useEffect, useCallback } from 'react';
 
-function useFormSubmit(url, authToken) {
+function useFormSubmit(url, fetchCsrfUrl, authToken) {
     const [csrfToken, setCsrfToken] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [data, setData] = useState(null);
-    const fetchCsrfUrl = csrfUrl
-    
+    //const fetchCsrfUrl = csrfUrl
+    console.log('useFormSubmit,csrfToken:',csrfToken)  
     // Fetch CSRF token
     useEffect(() => {  
       fetch(fetchCsrfUrl, { credentials: 'include' }) // Ensure cookies are sent
@@ -179,38 +179,38 @@ function useFormSubmit(url, authToken) {
       }, [fetchCsrfUrl])
 
     // Function to submit data with CSRF token
-    const onsubmit = data => {
-        const header = (authToken) ? { 'Authorization': `Bearer ${authToken}` } : {}
-        setIsLoading(true);
+    const submit = data => {
+        //const header = (authToken) ? { 'Authorization': `Bearer ${authToken}` } : {}
+        //setIsLoading(true);
         fetch(url, {
             method: 'POST',
             headers: {
                 "Content-Type": 'application/json',
-                "X-CSRFToken": csrfToken, 
-                ...header
+                "X-CSRFToken": csrfToken
             },
-            body: JSON.stringify(data),
-            credentials: 'include' // Include cookies if needed for sessions
+            credentials:'include', // Include cookies if needed for sessions
+            body: JSON.stringify(data)
         })
         .then(response => response.json())
         .then(data => {
-            setData(data);
-            setError(null);
+            //setData(data);
+            //setError(null);
+            console.log('useFormSubmit, response data:',data);
         })
         .catch(err => {
-            setError('Failed to submit data');
-            console.error(err);
+            //setError('Failed to submit data');
+            console.error("useFormSubmit:",err);
         })
         .finally(() => {
-            setIsLoading(false);
+           //setIsLoading(false);
         });
     }
-    const submitData = useCallback(onsubmit, [csrfToken, url, authToken]);
+    const submitData = useCallback(submit, [csrfToken, url, authToken]);
 
     return { submitData, isLoading, error, data };
 }
 
           
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
-         basename, urlRestapi, csrfUrl, signupUrl, confirmFetch, loginFetch, 
+         basename, urlRestapi, csrfUrl, signupUrl, resetPasswordUrl, confirmFetch, loginFetch, 
          uusisalasanaFetch, resetPasswordFetch, closeFetch, useFormSubmit }
