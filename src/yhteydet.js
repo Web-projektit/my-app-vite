@@ -161,53 +161,75 @@ const uusisalasanaFetch = (data,csrfToken) => {
     
 import { useState, useEffect, useCallback } from 'react';
 
-function useFormSubmit(url, fetchCsrfUrl, authToken) {
+function useFormSubmit({url, fetchCsrfUrl, authToken, setError}) {
+    /* Huom. tilamuuttujan muuttaminen aiheuttaa isäntäkomponenin uudelleenrenderöinnin */
     const [csrfToken, setCsrfToken] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [data, setData] = useState(null);
-    //const fetchCsrfUrl = csrfUrl
-    console.log('useFormSubmit,csrfToken:',csrfToken)  
-    // Fetch CSRF token
+
+    console.log('useFormSubmit,url:',url,'fetchCsrfUrl:',fetchCsrfUrl,',authToken:',authToken,',csrfToken:',csrfToken)  
+  
     useEffect(() => {  
       fetch(fetchCsrfUrl, { credentials: 'include' }) // Ensure cookies are sent
         .then(response => setCsrfToken(response.headers.get("X-CSRFToken")))
         .catch(err => {
-            setError('Failed to fetch CSRF token');
-            console.error(err);
-            });
-      }, [fetchCsrfUrl])
+            let message = 'CSRF-tokenin haku epäonnistui.'
+            setError('apiError',{ message:message })
+            console.error(err)
+            })     
+      }, [fetchCsrfUrl,setError])
 
     // Function to submit data with CSRF token
     const submit = data => {
-        //const header = (authToken) ? { 'Authorization': `Bearer ${authToken}` } : {}
-        //setIsLoading(true);
+        const setErrors = errors => {
+            for (let kentta in errors) {
+              console.log(`setErrors, ${kentta}:${errors[kentta]}`)
+              setError(kentta,{type:"palvelinvirhe",message:errors[kentta]})
+              }
+            }  
+      
+        const header = (authToken) ? { 'Authorization': `Bearer ${authToken}` } : {}
+        setIsLoading(true)
         fetch(url, {
             method: 'POST',
             headers: {
                 "Content-Type": 'application/json',
-                "X-CSRFToken": csrfToken
+                "X-CSRFToken": csrfToken,
+                ...header
             },
             credentials:'include', // Include cookies if needed for sessions
             body: JSON.stringify(data)
         })
         .then(response => response.json())
         .then(data => {
-            //setData(data);
-            //setError(null);
+            setData(data);
             console.log('useFormSubmit, response data:',data);
+            if (data?.status === 'virhe') {
+              if (data.message.includes('csrf')) {
+                console.error("csrf-virhe,message:",data.message)
+                setError('password2',{type: "palvelinvirhe",message:data.message })
+                }
+              else if (data.errors){
+                console.error('data.errors:',data.errors)
+                setErrors(data.errors)
+                }
+              else {
+                console.log('data.message:',String(data.message))
+                setError('password2',{type: "tunnusvirhe",message: data.message})
+                }
+              }
         })
         .catch(err => {
-            //setError('Failed to submit data');
+            let message = 'Tallennus palvelimelle epäonnistui'
+            setError('apiError',{ message:message })
             console.error("useFormSubmit:",err);
         })
         .finally(() => {
-           //setIsLoading(false);
+           setIsLoading(false);
         });
     }
-    const submitData = useCallback(submit, [csrfToken, url, authToken]);
-
-    return { submitData, isLoading, error, data };
+    const submitData = useCallback(submit, [csrfToken, url, authToken, setError]);
+    return { submitData, isLoading, data };
 }
 
           
