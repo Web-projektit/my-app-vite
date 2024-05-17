@@ -2,7 +2,7 @@
    sähköpostiosoitevahvistuslinkin uudelleen lähetykseen. */
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../auth/Auth";
+import { useAuth } from "./Auth";
 
 const Unconfirmed = () => {
 // const { setAuthTokens } = useAuth();

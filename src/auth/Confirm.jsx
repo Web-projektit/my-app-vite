@@ -1,6 +1,6 @@
 /* Sähköpostiosoitevahvistuslinkin uudelleen lähetys */
 import { useState,useEffect } from "react";
-import { useAuth } from "../auth/Auth";
+import { useAuth } from "./Auth";
 import { confirmFetch } from "../yhteydet"
 import { Error } from "../components/Styles"
 
@@ -31,13 +31,12 @@ confirmFetch(authTokens)
         console.error('confirmFetch,ei dataa')
         return
         }
-    const dataObj = JSON.parse(data)
-    console.log(`confirmFetch,response data:`,dataObj)
-    if (dataObj.ok) {
-        setIlmoitus(dataObj.message);
+    console.log(`confirmFetch,response data:`,data)
+    if (data?.status === 'ok') {
+        setIlmoitus(data?.message);
         } 
-    else if (dataObj.error) {
-        setVirhe(dataObj.message)
+    else if (data?.status === 'error') {
+        setVirhe(data?.message)
         }    
     })
 .catch(error => {

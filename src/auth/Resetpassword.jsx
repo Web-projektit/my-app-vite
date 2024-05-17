@@ -3,7 +3,7 @@ import { Link,useLocation } from "react-router-dom";
 import { TextField as Input } from '@mui/material'
 import { Otsikko, Error, Button } from "../components/Styles";
 import { useForm } from "react-hook-form";
-import { csrfUrl,resetPasswordUrl,useFormSubmit } from "../yhteydet"
+import { csrfUrl,resetPasswordUrl,useFormSubmit,clearFormErrors } from "../yhteydet"
 
 const Resetpassword = () => {
   const { register, handleSubmit, setError, clearErrors, watch, formState: { errors } } = useForm();
@@ -14,12 +14,8 @@ const Resetpassword = () => {
   const resetToken = queryParams.get('token');
   const resetUrl = resetPasswordUrl+'/'+resetToken
  
-  const { submitData, isLoading, data } = useFormSubmit({url:resetUrl, fetchCsrfUrl:csrfUrl, setError})
-  
-  const clearError = event => { 
-    const field = event.target.name
-    if (errors[field]?.type === 'palvelinvirhe') clearErrors(field)
-    }
+  const { submitData, isLoading, data } = useFormSubmit({url:resetUrl, csrfUrl, setError})
+  const clearError = event => clearFormErrors(event,errors,clearErrors)
 
   //const { submitData, isLoading, error, data } = useFormSubmit(resetUrl,csrfUrl)
   console.log("Resetpassword,response data:",data)
@@ -71,9 +67,9 @@ const Resetpassword = () => {
       {errors.password2?.type === 'required' && <Error>Anna salasana</Error>}
       {errors.password2?.type === 'pattern'  && <Error>Virheellinen salasana</Error>}
       {errors.password2?.type === 'validate' && <Error>Salasanat eivät täsmää</Error>}
-      {errors.password2?.type === 'tunnusvirhe' && <Error>{errors.password2.message}</Error>} 
-      {/* Huom. salasanan validointi palvelimella password-kentälle. */}
+     {/* Huom. salasanan validointi palvelimella password-kentälle. */}
       {errors.password?.type === 'palvelinvirhe' && <Error>{errors.password.message}</Error>} 
+      {errors.otherError && <Error>{errors.otherError.message}</Error>}  
     <Button type="submit" variant="outlined" disabled={isLoading}>
       Tallenna salasana
     </Button>

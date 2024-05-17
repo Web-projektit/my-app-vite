@@ -62,7 +62,7 @@ const deleteNote = id => {
 
 const csrfFetch = () => fetch(csrfUrl, {credentials: "include"})
 
-const confirmFetch = (token) => 
+const confirmFetch = token => 
     fetch(confirmUrl,{
         credentials:'include',
         headers:{"authorization":`bearer ${token}`}
@@ -71,113 +71,37 @@ const confirmFetch = (token) =>
         if (!response.ok) {
           throw new Error(`Unauthorized,status:${response.status}`);
           }
-        return response.text();
+        return response.json();
       })
     .catch(e => {
         console.error('confirmFetch:',String(e))
         throw e
         })
 
-const closeFetch = (token) => fetch(closeUrl,{
+const closeFetch = token => fetch(closeUrl,{
     credentials:'include',
     headers:{"authorization":`bearer ${token}`}
     })
-
-const loginFetch = (data,csrfToken,next) => {
-    /* Huom. toimii myös ilman kauttaviivojen muuntamista
-    next = encodeURIComponent(next) */
-    let url = next ? loginUrl+'?next='+next : loginUrl
-    console.log("loginFetch,url:"+url) 
-    return fetch(url,{
-        method:'POST',
-        headers: {
-            "X-CSRFToken": csrfToken,
-            "Content-Type": "application/json"
-            },
-        credentials:'include',
-        body:JSON.stringify(data)})
-    .then(response => {
-        console.log('loginFetch,response:',response.ok,response.status,response.url,response.redirected)
-        if (!response.ok) {
-            throw new Error('Network response was not ok')
-          }
-        const authHeader = response.headers.get('Authorization')
-        const token = authHeader ? authHeader.split(' ')[1] : null;
-        console.log('loginFetch,Authorization header:',authHeader,'token:',token) 
-        return response.json().then(data => ({...data,token:token}))
-        })  
-    .catch(error=> {
-        console.error('loginFetch:',error)
-        throw error
-        })    
-    }
-
-const uusisalasanaFetch = (data,csrfToken) => {
-    console.log("uusisalasanaFetch,url:"+uusisalasanaUrl) 
-    return fetch(uusisalasanaUrl,{
-        method:'POST',
-        headers: {
-            "X-CSRFToken": csrfToken,
-            "Content-Type": "application/json"
-            },
-        credentials:'include',
-        body:JSON.stringify(data)})
-    .then(response => {
-        console.log('uusisalasanaFetch,response:',response.ok,response.status,response.url,response.redirected)
-        if (!response.ok) {
-            throw new Error('Network response was not ok')
-            }
-        return response.json()
-        })  
-    .catch(error=> {
-        console.error('uusisalasanaFetch:',error)
-        throw error
-        })    
-    }
-
-    const resetPasswordFetch = (data,csrfToken,token) => {
-        console.log("resetFetch,url:"+resetPasswordUrl) 
-        let url = resetPasswordUrl+'/'+token
-        return fetch(url,{
-            method:'POST',
-            headers: {
-                "X-CSRFToken": csrfToken,
-                "Content-Type": "application/json"
-                },
-            credentials:'include',
-            body:JSON.stringify(data)})
-        .then(response => {
-            console.log('resetPasswordFetch,response:',response.ok,response.status,response.url,response.redirected)
-            if (!response.ok) {
-                throw new Error('Network response was not ok')
-                }
-            return response.json()
-            })  
-        .catch(error=> {
-            console.error('resetPasswordFetch:',error)
-            throw error
-            })    
-        }
-    
+  
 import { useState, useEffect, useCallback } from 'react';
 
-function useFormSubmit({url, fetchCsrfUrl, authToken, setError}) {
+function useFormSubmit({url, csrfUrl, authToken, setError}) {
     /* Huom. tilamuuttujan muuttaminen aiheuttaa isäntäkomponenin uudelleenrenderöinnin */
     const [csrfToken, setCsrfToken] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [data, setData] = useState(null);
 
-    console.log('useFormSubmit,url:',url,'fetchCsrfUrl:',fetchCsrfUrl,',authToken:',authToken,',csrfToken:',csrfToken)  
+    console.log('useFormSubmit,url:',url,'csrfUrl:',csrfUrl,',authToken:',authToken,',csrfToken:',csrfToken)  
   
     useEffect(() => {  
-      fetch(fetchCsrfUrl, { credentials: 'include' }) // Ensure cookies are sent
+      fetch(csrfUrl, { credentials: 'include' }) // Ensure cookies are sent
         .then(response => setCsrfToken(response.headers.get("X-CSRFToken")))
         .catch(err => {
             let message = 'CSRF-tokenin haku epäonnistui.'
             setError('apiError',{ message:message })
             console.error(err)
             })     
-      }, [fetchCsrfUrl,setError])
+      }, [csrfUrl,setError])
 
     // Function to submit data with CSRF token
     const submit = data => {
@@ -200,22 +124,40 @@ function useFormSubmit({url, fetchCsrfUrl, authToken, setError}) {
             credentials:'include', // Include cookies if needed for sessions
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('useFormSubmit,response:',response.ok,response.status,response.url,response.redirected)
+            if (!response.ok) {
+                throw new Error(`Yhteysvirhe: ${response.status} ${response.statusText}`)
+                }
+            const authHeader = response.headers.get('Authorization')
+            const token = authHeader ? authHeader.split(' ')[1] : null;
+            console.log('useFormSubmit,Authorization header:',authHeader,'token:',token) 
+            /* Huom.
+            The token variable can be used in the next .then 
+            part because of the closure property in JavaScript. 
+            The callback function passed to .then has access to 
+            the token variable since it was defined in the same 
+            scope where the callback was created. This mechanism 
+            allows the callback to "remember" the token variable 
+            and use it when the Promise resolves.
+            */
+            return response.json().then(jsonData => ({ ...jsonData, token: token }))
+           })  
         .then(data => {
             setData(data);
             console.log('useFormSubmit, response data:',data);
             if (data?.status === 'virhe') {
-              if (data.message.includes('csrf')) {
+              if (data.message?.includes('csrf')) {
                 console.error("csrf-virhe,message:",data.message)
-                setError('password2',{type: "palvelinvirhe",message:data.message })
-                }
+                setError('apiError',{ message:data.message })                }
               else if (data.errors){
                 console.error('data.errors:',data.errors)
                 setErrors(data.errors)
                 }
               else {
+                /* Huom. kaikissa lomakkeissa ei ole password2-kenttää */   
                 console.log('data.message:',String(data.message))
-                setError('password2',{type: "tunnusvirhe",message: data.message})
+                setError('otherError',{message: data.message})
                 }
               }
         })
@@ -232,7 +174,13 @@ function useFormSubmit({url, fetchCsrfUrl, authToken, setError}) {
     return { submitData, isLoading, data };
 }
 
+const clearFormErrors = (event,errors,clearErrors) => { 
+    const field = event.target.name
+    if (errors[field]?.type === 'palvelinvirhe') clearErrors(field)
+    if (errors['otherError']) clearErrors('otherError')  
+    if (errors['apiError']) clearErrors('apiError')    
+    }
           
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
-         basename, urlRestapi, csrfUrl, signupUrl, resetPasswordUrl, confirmFetch, loginFetch, 
-         uusisalasanaFetch, resetPasswordFetch, closeFetch, useFormSubmit }
+         basename, urlRestapi, csrfUrl, loginUrl, signupUrl, resetPasswordUrl, uusisalasanaUrl,confirmFetch,  
+         closeFetch, useFormSubmit, clearFormErrors }

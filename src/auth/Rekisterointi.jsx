@@ -1,101 +1,41 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from "react-hook-form"
 import { Error, Button } from '../components/Styles'
 import { TextField as Input } from '@mui/material'
-import { csrfFetch, signupUrl } from '../yhteydet'
+import { csrfUrl, signupUrl, useFormSubmit, clearFormErrors } from '../yhteydet'
 
 const Rekisterointi = () => {
   const [signedUp, setSignedUp] = useState(false)
-  const [email, setEmail] = useState('')
+  const password = useRef({});
+
   const {
     register,
     handleSubmit,
     setError,
     clearErrors,
     watch,
-    formState: { errors },
-  } = useForm()
+    formState: { errors } } = useForm()
 
-  const password = useRef({});
-  password.current = watch("password", "");
-  const csrfToken = useRef('');
-  console.log("Signup renderöidään, signupUrl:",signupUrl)
-   
-useEffect(() => {
-    console.log(`useEffect`)
-    csrfFetch()
-    .then(response => {
-      //response.headers.forEach((v,i) => console.log(i));
-      console.log(...response.headers);
-      csrfToken.current = response.headers.get("X-CSRFToken");
-    })
-    .catch(err => {
-      console.log(err);
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-console.log('Signup,csrfToken:',csrfToken.current)
-console.log(`Signup,signedUp:${signedUp},email:${email}`)
-
-const setErrors = errors => {
-  for (let kentta in errors) {
-    console.log(`setErrors, ${kentta}:${errors[kentta]}`)
-    setError(kentta,{type:"palvelinvirhe",message:errors[kentta]})
-    }
-  }  
+  const { 
+    submitData, 
+    isLoading, 
+    data } = useFormSubmit({url:signupUrl, csrfUrl, setError})
   
-const clearError = event => {
-const field = event.target.name == 'password2' ? 'password' : event.target.name
-if (errors[field]?.type === 'palvelinvirhe') clearErrors(field)
-}
+  const clearError = event => clearFormErrors(event,errors,clearErrors)
 
-// ...
-const rekisterointi = data => {
-      console.log("fetchSignup,csfrToken:",csrfToken.current)    
-      console.log("data:",data)
-      const mail = data['email']
-      /* 
-      const formData = new FormData();
-      Object.keys(data).forEach(key => formData.append(key, data[key]));
-      */
-      fetch(signupUrl,{
-        method:'POST',
-        headers: {
-          "X-CSRFToken": csrfToken.current,
-          "Content-Type": "application/json"
-          },
-        credentials:'include',
-        body:JSON.stringify(data)})
-      .then(response => response.text())  
-      .then(data => {
-      console.log(`data palvelimelta ${signupUrl}:${data}`)
-      if (data.message === 'OK') {
-        setEmail(mail)
-        console.log(`täytetty email:${mail}`)
-        setSignedUp(true)
-        console.log(`päivittymätön signedUp:${signedUp}`)
-        } 
-      else {
-        const dataObj = JSON.parse(data)
-        console.log("dataObj:",dataObj)
-        /* Huom. Palvelinvirheissä on virhe:, lomakkeen validointivirheissä ei.*/
-        if (dataObj.virhe?.includes('csrf'))
-          setError('password2',{type: "palvelinvirhe",message:'csfr-virhe' })
-        else 
-          //setError('password2',{type: "tunnusvirhe",message:'Tunnukset ovat jo käytössä'})
-          setErrors(dataObj.errors)
-        }
-    }).catch(e => {setError('apiError',{ message:e })})
-  }
-  
+  password.current = watch("password", "");  
+  console.log(`Rekisterointi,signedUp:${signedUp}`)
 
-  console.log(watch("email")) // watch input value by passing the name of it
+  if (data?.status === 'ok') {
+    setSignedUp(true)
+    } 
 
   return (
     <>
     <h1>Rekisteröityminen</h1>
-    <form onSubmit={handleSubmit(rekisterointi)}>
+    {isLoading && <p>Tallennus on käynnissä...</p>}
+    {errors.apiError && <Error>{errors.apiError.message}</Error>}  
+    <form onSubmit={handleSubmit(submitData)}>
     <Input 
       label="Sähköpostiosoite"
       variant="outlined"
@@ -154,6 +94,7 @@ const rekisterointi = data => {
       {errors.password2?.type === 'tunnusvirhe' && <Error>{errors.password2.message}</Error>} 
       {/* Huom. salasanan validointi palvelimella password-kentälle. */}
       {errors.password?.type === 'palvelinvirhe' && <Error>{errors.password.message}</Error>} 
+      {errors.otherError && <Error>{errors.otherError.message}</Error>}
 
   <Button type="submit" variant="outlined">
   Rekisteröidy

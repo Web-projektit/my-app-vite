@@ -1,6 +1,6 @@
 /* Vahvistuslinkin saapumiskuittaus sähköpostiosoitteen aikaisemmasta 
    tai tuoreesta vahvistuksesta. */
-import { useAuth } from "../auth/Auth";
+import { useAuth } from "./Auth";
 import { useLocation } from "react-router-dom";
 
 
