@@ -9,6 +9,7 @@ const confirmUrl = urlRestapi + '/confirm'
 const closeUrl = urlRestapi + '/logout'
 const uusisalasanaUrl = urlRestapi + '/reset'
 const resetPasswordUrl = urlRestapi + '/reset_password'
+const changeEmailUrl = urlRestapi + '/change_email'
 
 const getNotes = () => {
     const promise = axios.get(url)
@@ -85,13 +86,12 @@ const closeFetch = token => fetch(closeUrl,{
   
 import { useState, useEffect, useCallback } from 'react';
 
-function useFormSubmit({url, csrfUrl, authToken, setError}) {
+function useFormSubmit({url, csrfUrl, authTokens, setError}) {
     /* Huom. tilamuuttujan muuttaminen aiheuttaa isäntäkomponenin uudelleenrenderöinnin */
     const [csrfToken, setCsrfToken] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [data, setData] = useState(null);
-
-    console.log('useFormSubmit,url:',url,'csrfUrl:',csrfUrl,',authToken:',authToken,',csrfToken:',csrfToken)  
+    console.log('useFormSubmit,url:',url,'csrfUrl:',csrfUrl,',authTokens:',authTokens,',csrfToken:',csrfToken)  
   
     useEffect(() => {  
       fetch(csrfUrl, { credentials: 'include' }) // Ensure cookies are sent
@@ -103,7 +103,13 @@ function useFormSubmit({url, csrfUrl, authToken, setError}) {
             })     
       }, [csrfUrl,setError])
 
-    // Function to submit data with CSRF token
+    /* 
+    Huom. authTokens on json-merkkijono lainausmerkeissä. 
+    Ne täytyy poistaa JSON.parse-metodilla. Aikaisemmissa 
+    versioissa tämä ei ollut tarpeen, koska authTokens-arvoa
+    ei käytetty palvelimen httpAuth-token-autentikointiin, vaan
+    ainoastaan React-käyttöliittymän tilan hallintaan Boolean-arvona.   
+    */
     const submit = data => {
         const setErrors = errors => {
             for (let kentta in errors) {
@@ -112,7 +118,7 @@ function useFormSubmit({url, csrfUrl, authToken, setError}) {
               }
             }  
       
-        const header = (authToken) ? { 'Authorization': `Bearer ${authToken}` } : {}
+        const header = (authTokens) ? { 'Authorization': `Bearer ${authTokens}` } : {}
         setIsLoading(true)
         fetch(url, {
             method: 'POST',
@@ -170,7 +176,7 @@ function useFormSubmit({url, csrfUrl, authToken, setError}) {
            setIsLoading(false);
         });
     }
-    const submitData = useCallback(submit, [csrfToken, url, authToken, setError]);
+    const submitData = useCallback(submit, [csrfToken, url, authTokens, setError]);
     return { submitData, isLoading, data };
 }
 
@@ -182,5 +188,6 @@ const clearFormErrors = (event,errors,clearErrors) => {
     }
           
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
-         basename, urlRestapi, csrfUrl, loginUrl, signupUrl, resetPasswordUrl, uusisalasanaUrl,confirmFetch,  
+         basename, urlRestapi, csrfUrl, loginUrl, signupUrl, resetPasswordUrl, uusisalasanaUrl,
+         changeEmailUrl, confirmFetch,  
          closeFetch, useFormSubmit, clearFormErrors }

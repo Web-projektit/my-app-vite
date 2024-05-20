@@ -12,6 +12,7 @@ import Rekisterointi from "./auth/Rekisterointi";
 import Kirjautuminen from "./auth/Kirjautuminen";
 import Uusisalasana from "./auth/Uusisalasana";
 import Resetpassword from "./auth/Resetpassword";
+import ChangeEmail from "./auth/ChangeEmail";
 import Etusivu from "./pages/Etusivu";
 import { NavbarReactstrap as Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
@@ -20,10 +21,27 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './site.css'
 
 const App = () => {
-  const [authTokens, setAuthTokens] = useState(sessionStorage.getItem('tokens'));
-  const [authConfirm, setAuthConfirm] = useState(localStorage.getItem('confirm'));
+  /*
+    Huom. authTokens on json-merkkijono lainausmerkeissä,
+    mutta Flaskin httoAuth-autentikointi ei hyväksy lainausmerkkejä 
+    Authorization headerissä tokenin ympärillä, joten
+    ne täytyy poistaa JSON.parse-metodilla. 
+    
+    Aikaisemmissa versioissa tämä ei ollut tarpeen, koska authTokens-arvoa
+    ei käytetty palvelimen httpAuth-token-autentikointiin, vaan
+    ainoastaan React-käyttöliittymän tilan hallintaan Boolean-arvona.   
+    React-käyttöliittymän tilan hallintaan käytetään edelleenkin
+    vain Boolean-arvoa, mihin authTokens json-merkkijonomuotoisenakin 
+    kävisi, mutta nyt se haetaan sessionStoragesta vain App-komponentin 
+    renderöinnin alussa.
+    */
+  const tokens = JSON.parse(sessionStorage.getItem('tokens'))
+  const confirm = JSON.parse(localStorage.getItem('confirm'))
+  const [authTokens, setAuthTokens] = useState(tokens);
+  const [authConfirm, setAuthConfirm] = useState(confirm);
   /* Tyhjennetään state poistuttessa */
   let navigate = useNavigate()
+  console.log('Rendering App, authTokens:',authTokens)
  
   const setTokens = data => {
     console.log('setTokens:',data)
@@ -31,7 +49,10 @@ const App = () => {
          jolloin authTokens-alkuarvoksi tulisi merkkijono 'undefined'. 
          Tässä removeItem tuottaa authTokens-alkuarvoksi null,
          jolloin sen boolean arvo on oikein false. */
-      if (data) sessionStorage.setItem("tokens", JSON.stringify(data));
+      if (data) {
+        sessionStorage.setItem("tokens", JSON.stringify(data));
+        console.log('setTokens,authTokens in sessionStorage:',JSON.parse(sessionStorage.getItem('tokens')))
+        }
       else {
         //axios.get(closeUrl,{withCredentials:true});
         //fetch(closeUrl,{credentials:'include'})
@@ -55,9 +76,6 @@ const App = () => {
     setAuthConfirm(data);
     }
   
-  console.log('rendering App')
-  
-
   return (
     <AuthContext.Provider value={{ authTokens, setAuthTokens: setTokens, authConfirm, setAuthConfirm: setConfirm }}>
     <Navbar/>
@@ -74,6 +92,7 @@ const App = () => {
         <Route path="/reset_password" element={<Resetpassword/>}/>
         <Route path="/confirm" element={<Private><Confirm/></Private>}/>
         <Route path="/unconfirmed" element={<Private><Unconfirmed/></Private>}/>
+        <Route path="/vaihdasahkoposti" element={<Private><ChangeEmail/></Private>}/>
         <Route path="*" element={<h1>404 - Not Found</h1>} />
     </Routes>
     </div>
