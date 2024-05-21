@@ -16,7 +16,7 @@ const ChangeEmail = () => {
   if (data?.status === 'ok') {
     return (
       <div>
-      <h2>Salasanan uusiminen onnistui.</h2>
+      <h3>Sähköpostiosoitteesi vaihtaminen käynnistyi</h3>
       <p>{data.message}</p>
       <Link to="/kirjautuminen">Kirjaudu palveluun</Link>
       </div>

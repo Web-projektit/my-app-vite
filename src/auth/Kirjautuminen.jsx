@@ -23,9 +23,14 @@ const Kirjautuminen =  () => {
     isLoading, 
     data } = useFormSubmit({url:loginUrl, csrfUrl, setError})
   
-  const { state } = useLocation()
+  const location = useLocation()
+  const state = location.state
+  const queryParams = new URLSearchParams(location.search);
+  const status = queryParams.get('status');
+  const message = queryParams.get('message');
+  
   const clearError = event => clearFormErrors(event,errors,clearErrors)
-
+  
   useEffect(() => {
     /* Huom. Kontekstin arvon muuttaminen johtaa myös
        App-komponentin uudelleenrenderöintiin, ja nykyisen
@@ -50,6 +55,8 @@ const Kirjautuminen =  () => {
       {/*<Logo src={logoImg} />*/}
       {state?.location.pathname === '/unconfirmed' && <p>Kirjaudu ensin</p>}
       {isLoading && <p>Kirjaudutaan...</p>}
+      {status === 'virhe' && <Error>{message}</Error>}
+      {status === 'ok' && <p>{message}</p>}
       <Otsikko>Kirjautuminen</Otsikko>
       {/* Huom. handleSubmit ei välttämättä toimi jos form on Form-komponentti */}
       <form onSubmit={handleSubmit(submitData)} style={{ maxWidth: '600px' }}>
