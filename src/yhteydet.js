@@ -63,6 +63,7 @@ const deleteNote = id => {
 
 const csrfFetch = () => fetch(csrfUrl, {credentials: "include"})
 
+
 const confirmFetch = token => 
     fetch(confirmUrl,{
         credentials:'include',
@@ -79,6 +80,7 @@ const confirmFetch = token =>
         throw e
         })
 
+
 const closeFetch = token => fetch(closeUrl,{
     credentials:'include',
     headers:{"authorization":`bearer ${token}`}
@@ -86,11 +88,61 @@ const closeFetch = token => fetch(closeUrl,{
   
 import { useState, useEffect, useCallback } from 'react';
 
+
+function useGetUser({url, authTokens, setError, reset}) {
+  const [userLoading, setUserLoading] = useState(false);
+  useEffect(() => {
+    if (authTokens) {
+      setUserLoading(true);
+      fetch(url, {
+        headers: {'Authorization': `Bearer ${authTokens}`}
+        })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Yhteysvirhe: ${response.status} ${response.statusText}`)
+          }
+        return response.json();
+        })
+      .then(data => {
+        if (data?.status === 'virhe') {
+          let message = data.message
+          setError('apiError',{ message:message })
+          }
+        else if (data?.status === 'ok' && data.data) { 
+          reset(data.data)
+          }
+        })
+      .catch(err => {
+        let message = `Profiilitietojen haku epäonnistui (${err})`
+        setError('apiError',{ message:message })
+        })
+      .finally(() => {
+        setUserLoading(false);
+      });
+    }
+  }, [url, authTokens, reset, setError])
+
+
+  return { userLoading };
+}
+
+
 function useFormSubmit({url, csrfUrl, authTokens, setError}) {
-    /* Huom. tilamuuttujan muuttaminen aiheuttaa isäntäkomponenin uudelleenrenderöinnin */
+    /* 
+    Tilamuuttujan muuttaminen aiheuttaa isäntäkomponenin uudelleenrenderöinnin.
+    Myös onnistumisesta on hyvä ilmoittaa ja tyhjentää tämäkin ilmoitus
+    mitä tahansa kenttää muutettaessa. 
+    
+    Kaikki komponentin lomakkeen tilamuuttujat
+    kannattaa päivittää tässä yhdessä lomakkeen muun 
+    tilan kanssa, komponentissa ne aiheuttavat helposti
+    ikuisen silmukan react-hook-formin tilamuutosten kanssa.
+     */
+    
     const [csrfToken, setCsrfToken] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [data, setData] = useState(null);
+    const [successMessage, setSuccessMessage] = useState('')
     console.log('useFormSubmit,url:',url,'csrfUrl:',csrfUrl,',authTokens:',authTokens,',csrfToken:',csrfToken)  
   
     useEffect(() => {  
@@ -151,6 +203,7 @@ function useFormSubmit({url, csrfUrl, authTokens, setError}) {
            })  
         .then(data => {
             setData(data);
+            setSuccessMessage(data.message)
             console.log('useFormSubmit, response data:',data);
             if (data?.status === 'virhe') {
               if (data.message?.includes('csrf')) {
@@ -177,11 +230,12 @@ function useFormSubmit({url, csrfUrl, authTokens, setError}) {
         });
     }
     const submitData = useCallback(submit, [csrfToken, url, authTokens, setError]);
-    return { submitData, isLoading, data };
+    return { submitData, isLoading, data, successMessage, setSuccessMessage };
 }
 
-const clearFormErrors = (event,errors,clearErrors) => { 
+const clearFormErrors = (event,errors,clearErrors,setSuccessMessage) => { 
     const field = event.target.name
+    setSuccessMessage('')
     if (errors[field]?.type === 'palvelinvirhe') clearErrors(field)
     if (errors['otherError']) clearErrors('otherError')  
     if (errors['apiError']) clearErrors('apiError')    
@@ -190,4 +244,4 @@ const clearFormErrors = (event,errors,clearErrors) => {
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
          basename, urlRestapi, csrfUrl, loginUrl, signupUrl, resetPasswordUrl, uusisalasanaUrl,
          changeEmailUrl, confirmFetch,  
-         closeFetch, useFormSubmit, clearFormErrors }
+         closeFetch, useGetUser, useFormSubmit, clearFormErrors }

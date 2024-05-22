@@ -38,6 +38,7 @@ export const NavbarReactstrap = () => {
           <Nav className="mr-auto" navbar>
             <NavLink activeclassname="active" to="/">Etusivu</NavLink> 
             <PrivateLink activeclassname="active" to="/notes/">Ohjelmointivihjeet</PrivateLink>
+            <PrivateLink activeclassname="active" to="/profiili/">Profiili</PrivateLink>
             <PublicLink activeclassname="active" to="/lomake/">Lomake</PublicLink> 
             <LoginCloseButton/>
           </Nav>

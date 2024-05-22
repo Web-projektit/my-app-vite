@@ -10,6 +10,7 @@ import Confirmed from "./auth/Confirmed";
 import Unconfirmed from "./auth/Unconfirmed";
 import Rekisterointi from "./auth/Rekisterointi";
 import Kirjautuminen from "./auth/Kirjautuminen";
+import Profiili from "./auth/Profiili";
 import Uusisalasana from "./auth/Uusisalasana";
 import Resetpassword from "./auth/Resetpassword";
 import ChangeEmail from "./auth/ChangeEmail";
@@ -87,6 +88,7 @@ const App = () => {
         <Route path="/notes/:id" element={<Muistiinpano/>} />
         <Route path="/rekisterointi/" element={<Rekisterointi/>} />
         <Route path="/kirjautuminen/" element={<Kirjautuminen/>} />
+        <Route path="/profiili/" element={<Private><Profiili/></Private>} />
         <Route path="/confirmed" element={<Confirmed/>}/>
         <Route path="/uusisalasana" element={<Uusisalasana/>}/>
         <Route path="/reset_password" element={<Resetpassword/>}/>
