@@ -14,6 +14,7 @@ import Profiili from "./auth/Profiili";
 import Uusisalasana from "./auth/Uusisalasana";
 import Resetpassword from "./auth/Resetpassword";
 import ChangeEmail from "./auth/ChangeEmail";
+import Kayttajat from "./auth/Kayttajat";
 import Etusivu from "./pages/Etusivu";
 import { NavbarReactstrap as Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
@@ -95,6 +96,7 @@ const App = () => {
         <Route path="/confirm" element={<Private><Confirm/></Private>}/>
         <Route path="/unconfirmed" element={<Private><Unconfirmed/></Private>}/>
         <Route path="/vaihdasahkoposti" element={<Private><ChangeEmail/></Private>}/>
+        <Route path="/kayttajat" element={<Private><Kayttajat/></Private>}/>
         <Route path="*" element={<h1>404 - Not Found</h1>} />
     </Routes>
     </div>

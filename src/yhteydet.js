@@ -126,6 +126,46 @@ function useGetUser({url, authTokens, setError, reset}) {
   return { userLoading };
 }
 
+function useGetData({ url,authTokens }) {
+  const [dataLoading, setDataLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (authTokens) {
+      setDataLoading(true);
+      fetch(url, {
+        headers: {'Authorization': `Bearer ${authTokens}`}
+        })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Yhteysvirhe: ${response.status} ${response.statusText}`)
+          }
+        return response.json();
+        })
+      .then(data => {
+        if (data?.status === 'virhe') {
+          let message = data.message
+          setError(message)
+          }
+        else if (data?.status === 'ok' && data.data) { 
+          setData(data.data)
+          }
+        })
+      .catch(err => {
+        let message = `Profiilitietojen haku epäonnistui (${err})`
+        setError(message)
+        })
+      .finally(() => {
+        setDataLoading(false);
+      });
+    }
+  }, [url, authTokens, setError, setData, setDataLoading])
+
+
+  return { dataLoading,data,error };
+}
+
 
 function useFormSubmit({url, csrfUrl, authTokens, setError}) {
     /* 
@@ -244,4 +284,4 @@ const clearFormErrors = (event,errors,clearErrors,setSuccessMessage) => {
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
          basename, urlRestapi, csrfUrl, loginUrl, signupUrl, resetPasswordUrl, uusisalasanaUrl,
          changeEmailUrl, confirmFetch,  
-         closeFetch, useGetUser, useFormSubmit, clearFormErrors }
+         closeFetch, useGetUser, useGetData, useFormSubmit, clearFormErrors }

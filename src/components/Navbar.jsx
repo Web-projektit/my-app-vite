@@ -39,6 +39,7 @@ export const NavbarReactstrap = () => {
             <NavLink activeclassname="active" to="/">Etusivu</NavLink> 
             <PrivateLink activeclassname="active" to="/notes/">Ohjelmointivihjeet</PrivateLink>
             <PrivateLink activeclassname="active" to="/profiili/">Profiili</PrivateLink>
+            <PrivateLink activeclassname="active" to="/kayttajat/">Käyttäjät</PrivateLink> 
             <PublicLink activeclassname="active" to="/lomake/">Lomake</PublicLink> 
             <LoginCloseButton/>
           </Nav>
