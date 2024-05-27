@@ -1,6 +1,13 @@
 import styled from 'styled-components';
 import { TextField, Button as Painike } from '@mui/material'
+import Alert from '@mui/material/Alert'
+import CheckIcon from '@mui/icons-material/Check';
 import { Input as Check } from 'reactstrap'
+import PropTypes from 'prop-types'
+
+// Your component definition here...
+
+
 
 const Otsikko = styled.h2`
   margin: 0 auto;
@@ -38,4 +45,20 @@ const Button = styled(Painike)`
     }
     `;    
     
-export { Otsikko, Error, Input, Checkbox, Button }
+const AlertOma = ({ children,color,close }) => (
+    <Alert 
+    icon={<CheckIcon fontSize="inherit" />} 
+    severity={color}
+    onClose={close}
+    >
+    {children}
+    </Alert>
+    )
+    
+AlertOma.propTypes = {
+  children: PropTypes.node,
+  color: PropTypes.oneOf(['error', 'info', 'success', 'warning']),
+  close: PropTypes.func,
+};    
+
+export { Otsikko, Error, Input, Checkbox, Button, AlertOma as Alert }

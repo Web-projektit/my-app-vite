@@ -2,13 +2,14 @@ import { Link } from "react-router-dom";
 import { TextField as Input } from '@mui/material'
 import { Otsikko, Error, Button } from "../components/Styles";
 import { useForm } from "react-hook-form";
-import { csrfUrl,changeEmailUrl,useFormSubmit,clearFormErrors } from "../yhteydet"
+import { csrfUrl,urlRestapi,useFormSubmit,clearFormErrors } from "../yhteydet"
 import { useAuth } from "./Auth";
 
 const ChangeEmail = () => {
+  const url = urlRestapi + '/change_email'
   const { authTokens } = useAuth();
   const { register, handleSubmit, setError, clearErrors, formState: { errors } } = useForm();
-  const { submitData, isLoading, data } = useFormSubmit({url:changeEmailUrl, csrfUrl, authTokens, setError})
+  const { submitData, isLoading, data } = useFormSubmit({url, csrfUrl, authTokens, setError})
   const clearError = event => clearFormErrors(event,errors,clearErrors)
 
   //const { submitData, isLoading, error, data } = useFormSubmit(resetUrl,csrfUrl)

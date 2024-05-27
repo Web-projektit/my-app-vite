@@ -4,13 +4,14 @@ import { TextField as Input } from '@mui/material'
 import { Otsikko, Error, Button } from "../components/Styles";
 import { useForm } from "react-hook-form";
 import { useAuth } from "./Auth";
-import { csrfUrl, loginUrl, useFormSubmit, clearFormErrors } from "../yhteydet"
+import { csrfUrl, urlRestapi, useFormSubmit, clearFormErrors } from "../yhteydet"
 
 const Kirjautuminen =  () => {
   /* Huom. Tässä next-parametria ei lisätä url:iin, koska
   siirtymistä ei tehdä palvelimella, vaan täältä suoraan.
   let url = next ? loginUrl+'?next='+next : loginUrl 
   */
+  const url = urlRestapi + '/login'
   const { setAuthTokens,setAuthConfirm } = useAuth();
   const { 
     register, 
@@ -21,7 +22,7 @@ const Kirjautuminen =  () => {
   const { 
     submitData, 
     isLoading, 
-    data } = useFormSubmit({url:loginUrl, csrfUrl, setError})
+    data } = useFormSubmit({url, csrfUrl, setError})
   
   const location = useLocation()
   const state = location.state

@@ -88,7 +88,6 @@ const closeFetch = token => fetch(closeUrl,{
   
 import { useState, useEffect, useCallback } from 'react';
 
-
 function useGetUser({url, authTokens, setError, reset}) {
   const [userLoading, setUserLoading] = useState(false);
   useEffect(() => {
@@ -126,12 +125,15 @@ function useGetUser({url, authTokens, setError, reset}) {
   return { userLoading };
 }
 
-function useGetData({ url,authTokens }) {
+function useGetData({ url,authTokens,showAlert }) {
   const [dataLoading, setDataLoading] = useState(false);
   const [data, setData] = useState([]);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
+
+  const clear = () => setError('')
 
   useEffect(() => {
+    console.log('useGetData,url:',url,',authTokens:',authTokens)
     if (authTokens) {
       setDataLoading(true);
       fetch(url, {
@@ -145,27 +147,125 @@ function useGetData({ url,authTokens }) {
         })
       .then(data => {
         if (data?.status === 'virhe') {
-          let message = data.message
-          setError(message)
+          showAlert(data.message,'error')
           }
         else if (data?.status === 'ok' && data.data) { 
+          showAlert(data.message,'success')
           setData(data.data)
           }
         })
       .catch(err => {
-        let message = `Profiilitietojen haku epäonnistui (${err})`
-        setError(message)
+        let message = `Tietojen haku epäonnistui, url:${url} (${err})`
+        //setError(message)
+        showAlert(message,'error')
         })
       .finally(() => {
         setDataLoading(false);
       });
     }
-  }, [url, authTokens, setError, setData, setDataLoading])
+  }, [url, authTokens, showAlert, setData, setDataLoading])
 
-
-  return { dataLoading,data,error };
+return { dataLoading,data,error,clear };
 }
 
+const useGetCsrf = (showAlert) => {
+  const [csrfToken, setCsrfToken] = useState('');
+  const [csrfLoading, setCsrfLoading] = useState(false);
+  //const [csrfError, setCsrfError] = useState(null);
+  useEffect(() => {
+    setCsrfLoading(true);
+    fetch(csrfUrl, { credentials: 'include' }) // Ensure cookies are sent 
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Verkkovirhe CSRF-tokenin haussa');
+        }
+      setCsrfToken(response.headers.get("X-CSRFToken"))
+      })
+    .catch(err => {
+        let message = 'CSRF-tokenin haku epäonnistui.'
+        //setCsrfError(message)
+        showAlert(message,'error')
+        console.error(err)
+        })
+    .finally(() => {
+        setCsrfLoading(false);
+        });
+    }, [showAlert])
+
+  return { csrfToken, csrfLoading }
+  }   
+
+function useSaveData({ url,authTokens,showAlert }) {
+  const { csrfToken, loading: csrfLoading } = useGetCsrf(showAlert)
+  const [dataLoading, setDataLoading] = useState(false);
+  const [data, setData] = useState({});
+  //const [error, setError] = useState('');
+  //const [success, setSuccess] = useState('')
+ 
+  /*
+    const clearMessages = () => {
+    setError('')
+    setSuccess('')
+    }*/
+
+  const saveData = (dataSave) => {
+    if (csrfLoading) {
+      //setError(csrfError)
+      //showAlert(csrfError,'error')
+      return
+      }
+    const header = (authTokens) ? { 'Authorization': `Bearer ${authTokens}` } : {}
+    setDataLoading(true);
+    fetch(url, {
+      method: 'POST',
+      headers: {
+          "Content-Type": 'application/json',
+          "X-CSRFToken": csrfToken,
+          ...header
+          },
+      credentials:'include', // Include cookies if needed for sessions
+      body: JSON.stringify(dataSave)
+      })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Yhteysvirhe: ${response.status} ${response.statusText}`)
+            }
+        return response.json()
+        })
+    .then(data => {
+        if (data?.status === 'virhe') {
+          showAlert(data.message,'error')
+          }
+        else if (data?.status === 'ok') { 
+          showAlert(data.message,'success')
+          setData(data)
+          }
+        })
+    .catch(err => {
+        let message = `Tietojen tallennus epäonnistui (${err})`
+        //setError(message)
+        showAlert(message,'error')
+        })  
+    .finally(() => {
+        setDataLoading(false);
+        });
+    }
+  
+  const tallenna = useCallback(saveData, [url,
+    authTokens,
+    csrfToken,
+    // csrfError,
+    csrfLoading,
+    setData,
+    showAlert,
+    setDataLoading
+    ])  
+  
+  //const clear = useCallback(clearMessages, [setError,setSuccess])  
+    
+  // return { dataLoading,data,error,success,clear,tallenna }
+  return { dataLoading,data,tallenna }
+  }
 
 function useFormSubmit({url, csrfUrl, authTokens, setError}) {
     /* 
@@ -275,13 +375,33 @@ function useFormSubmit({url, csrfUrl, authTokens, setError}) {
 
 const clearFormErrors = (event,errors,clearErrors,setSuccessMessage) => { 
     const field = event.target.name
-    setSuccessMessage('')
+    if (setSuccessMessage) setSuccessMessage('')
     if (errors[field]?.type === 'palvelinvirhe') clearErrors(field)
     if (errors['otherError']) clearErrors('otherError')  
     if (errors['apiError']) clearErrors('apiError')    
     }
-          
+     
+
+const useAlert = () => {
+  const [alert, setAlert] = useState({ visible: false, message: '', type: '' });
+
+  const showAlert = (message, type = 'info') => {
+    setAlert({ visible: true, message, type });
+    setTimeout(() => {
+      setAlert({ visible: false, message: '', type: '' });
+      }, 10000); // Automaattinen piilottaminen 10 sekunnin kuluttua
+    }
+
+  const hideAlert = () => {
+    setAlert({ visible: false, message: '', type: '' });
+    }
+
+  return { alert,showAlert,hideAlert }
+  }
+
+     
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
          basename, urlRestapi, csrfUrl, loginUrl, signupUrl, resetPasswordUrl, uusisalasanaUrl,
-         changeEmailUrl, confirmFetch,  
-         closeFetch, useGetUser, useGetData, useFormSubmit, clearFormErrors }
+         changeEmailUrl, confirmFetch,  closeFetch, 
+         useAlert, useGetUser, useGetData, useFormSubmit, 
+         useSaveData, clearFormErrors }
