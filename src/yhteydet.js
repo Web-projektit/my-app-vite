@@ -125,7 +125,7 @@ function useGetUser({url, authTokens, setError, reset}) {
   return { userLoading };
 }
 
-function useGetData({ url,authTokens,showAlert }) {
+function useGetData({ url,authTokens }) {
   const [dataLoading, setDataLoading] = useState(false);
   const [data, setData] = useState([]);
   const [error, setError] = useState('');
@@ -147,31 +147,30 @@ function useGetData({ url,authTokens,showAlert }) {
         })
       .then(data => {
         if (data?.status === 'virhe') {
-          showAlert(data.message,'error')
+          let message = data.message
+          setError(message)
           }
         else if (data?.status === 'ok' && data.data) { 
-          showAlert(data.message,'success')
           setData(data.data)
           }
         })
       .catch(err => {
         let message = `Tietojen haku epäonnistui, url:${url} (${err})`
-        //setError(message)
-        showAlert(message,'error')
+        setError(message)
         })
       .finally(() => {
         setDataLoading(false);
       });
     }
-  }, [url, authTokens, showAlert, setData, setDataLoading])
+  }, [url, authTokens, setError, setData, setDataLoading])
 
 return { dataLoading,data,error,clear };
 }
 
-const useGetCsrf = (showAlert) => {
+const useGetCsrf = () => {
   const [csrfToken, setCsrfToken] = useState('');
   const [csrfLoading, setCsrfLoading] = useState(false);
-  //const [csrfError, setCsrfError] = useState(null);
+  const [csrfError, setCsrfError] = useState(null);
   useEffect(() => {
     setCsrfLoading(true);
     fetch(csrfUrl, { credentials: 'include' }) // Ensure cookies are sent 
@@ -183,35 +182,32 @@ const useGetCsrf = (showAlert) => {
       })
     .catch(err => {
         let message = 'CSRF-tokenin haku epäonnistui.'
-        //setCsrfError(message)
-        showAlert(message,'error')
+        setCsrfError(message)
         console.error(err)
         })
     .finally(() => {
         setCsrfLoading(false);
         });
-    }, [showAlert])
+    }, [])
 
-  return { csrfToken, csrfLoading }
+  return { csrfToken, csrfLoading, csrfError }
   }   
 
-function useSaveData({ url,authTokens,showAlert }) {
-  const { csrfToken, loading: csrfLoading } = useGetCsrf(showAlert)
+function useSaveData({ url,authTokens }) {
+  const { csrfToken, loading: csrfLoading, error: csrfError } = useGetCsrf()
   const [dataLoading, setDataLoading] = useState(false);
   const [data, setData] = useState({});
-  //const [error, setError] = useState('');
-  //const [success, setSuccess] = useState('')
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('')
  
-  /*
-    const clearMessages = () => {
+  const clearMessages = () => {
     setError('')
     setSuccess('')
-    }*/
+    }
 
   const saveData = (dataSave) => {
-    if (csrfLoading) {
-      //setError(csrfError)
-      //showAlert(csrfError,'error')
+    if (csrfLoading || csrfError) {
+      setError(csrfError)
       return
       }
     const header = (authTokens) ? { 'Authorization': `Bearer ${authTokens}` } : {}
@@ -234,17 +230,17 @@ function useSaveData({ url,authTokens,showAlert }) {
         })
     .then(data => {
         if (data?.status === 'virhe') {
-          showAlert(data.message,'error')
+          let message = data.message
+          setError(message)
           }
         else if (data?.status === 'ok') { 
-          showAlert(data.message,'success')
           setData(data)
+          setSuccess(data.message)
           }
         })
     .catch(err => {
         let message = `Tietojen tallennus epäonnistui (${err})`
-        //setError(message)
-        showAlert(message,'error')
+        setError(message)
         })  
     .finally(() => {
         setDataLoading(false);
@@ -254,17 +250,16 @@ function useSaveData({ url,authTokens,showAlert }) {
   const tallenna = useCallback(saveData, [url,
     authTokens,
     csrfToken,
-    // csrfError,
+    csrfError,
     csrfLoading,
     setData,
-    showAlert,
-    setDataLoading
-    ])  
+    setError,
+    setDataLoading,
+    setSuccess])  
   
-  //const clear = useCallback(clearMessages, [setError,setSuccess])  
+  const clear = useCallback(clearMessages, [setError,setSuccess])  
     
-  // return { dataLoading,data,error,success,clear,tallenna }
-  return { dataLoading,data,tallenna }
+  return { dataLoading,data,error,success,clear,tallenna }
   }
 
 function useFormSubmit({url, csrfUrl, authTokens, setError}) {
@@ -382,26 +377,8 @@ const clearFormErrors = (event,errors,clearErrors,setSuccessMessage) => {
     }
      
 
-const useAlert = () => {
-  const [alert, setAlert] = useState({ visible: false, message: '', type: '' });
-
-  const showAlert = (message, type = 'info') => {
-    setAlert({ visible: true, message, type });
-    setTimeout(() => {
-      setAlert({ visible: false, message: '', type: '' });
-      }, 10000); // Automaattinen piilottaminen 10 sekunnin kuluttua
-    }
-
-  const hideAlert = () => {
-    setAlert({ visible: false, message: '', type: '' });
-    }
-
-  return { alert,showAlert,hideAlert }
-  }
-
-     
 export { getNotes, getNote, addNote, updateNote, deleteNote, csrfFetch, 
          basename, urlRestapi, csrfUrl, loginUrl, signupUrl, resetPasswordUrl, uusisalasanaUrl,
          changeEmailUrl, confirmFetch,  closeFetch, 
-         useAlert, useGetUser, useGetData, useFormSubmit, 
-         useSaveData, clearFormErrors }
+         useGetUser, useGetData, useFormSubmit, useSaveData, 
+         clearFormErrors }

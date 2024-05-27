@@ -1,9 +1,9 @@
 /* Käyttäjien listaus ja CRUD-toiminnot */
 import { useRef,useState,useEffect } from 'react'
-import { Button, Alert } from '../components/Styles'
-//import Alert from '@mui/material/Alert';
-//import CheckIcon from '@mui/icons-material/Check';
-import { urlRestapi, useAlert, useGetData, useSaveData } from '../yhteydet'
+import { Error, Button } from '../components/Styles'
+import Alert from '@mui/material/Alert';
+import CheckIcon from '@mui/icons-material/Check';
+import { urlRestapi, useGetData, useSaveData } from '../yhteydet'
 import { useAuth } from './Auth'
 // import User from '../components/User'
 import UserPieChart from '../components/Pie'
@@ -22,24 +22,24 @@ const Kayttajat = () => {
   const { authTokens } = useAuth()
   const gridRef = useRef()   
 
-  const { alert,showAlert,hideAlert } = useAlert()
-
   const { 
     dataLoading, 
-    data } = useGetData({ url, authTokens, showAlert })
+    data,
+    error,
+    clear:getClear } = useGetData({ url, authTokens })
 
   const { 
     dataLoading:saveLoading, 
     data:saveData,
-    //error:saveError,
-    //success:saveSuccess,
-    //clear:saveClear,
-    tallenna } = useSaveData({'url':saveUrl, authTokens, showAlert })
+    error:saveError,
+    success:saveSuccess,
+    clear:saveClear,
+    tallenna } = useSaveData({'url':saveUrl,authTokens })
 
   console.log('Kayttajat,url:', url, 
   'saveData:', saveData, 
-  //'saveError:', saveError,
-  //'saveSuccess:', saveSuccess, 
+  'saveError:', saveError,
+  'saveSuccess:', saveSuccess, 
   'saveLoading:', saveLoading, 
   'dataLoading:', dataLoading
   )
@@ -54,24 +54,20 @@ const Kayttajat = () => {
       }
   }, [data]);
 
-  /* 
   useEffect(() => {
     console.log('Kayttajat,useEffect timeout saveData:', saveData);
     const timer = setTimeout(() => {
       getClear();
       saveClear();
-      }, 10000); 
-    */
+      }, 10000);
     /* Huom. palautetaan komponenttia purettaessa (unmount) ja myös
-       ennen useEffectia suoritettava funktio.
-    */
-    //return () => clearTimeout(timer);
+       ennen useEffectia suoritettava funktio. */
+    return () => clearTimeout(timer);
     /* Huom. Linting vaatii myös käytetyt funktiot riippuvuuksiksi
        Toisalta ilman useCallbackia funktio uusitaan jokaisessa renderöinnissä,
        mikä myöskin vaatisi sen lisäämistä riippuvuudeksi. 
     */ 
-    //}, [saveClear,getClear,saveData]);
-    
+    }, [saveClear,getClear,saveData]);
 
   const columnDefs = [
     { field: 'username',flex: 1, filter: true },
@@ -121,16 +117,16 @@ return (
     Tallenna muutokset
     </Button>
 
-    {alert.visible && 
-    <Alert type={alert.type} close={hideAlert}>{alert.message}</Alert>}
-
-    {/*
-    {error && 
-    <Alert close={getClear} type="error">{error}</Alert>}
-    {saveError && 
-    <Alert close={saveClear} type="error">{saveError}</Alert>}
+    {error && <Error>{error}</Error>}
+    {saveError && <Error>{saveError}</Error>}
     {saveSuccess &&
-    <Alert close={saveClear} type="success">{saveSuccess}</Alert>}*/}
+    <Alert 
+    //variant='outlined'
+    onClose={() => saveClear()}
+    icon={<CheckIcon fontSize="inherit"/>} 
+    severity="success">
+    {saveSuccess}
+    </Alert>}
     <div style={{ width: '25vw' }}>
     {data && <UserPieChart
     activeUsers={data.filter(user => user.active).length}
