@@ -1,5 +1,9 @@
 import axios from 'axios'
-let basename = ''
+let { origin,host,hostname,port,protocol,href } = window.location
+console.log(`window.location,origin:${origin},host:${host},hostname:${hostname},port:${port},protocol:${protocol},href:${href}`)
+let base = (port && port === '5173') ? '' : '/react-sovellusmalli-ii'
+console.log('base:',base)
+let basename = base
 const url = 'http://localhost:3001/notes'
 const urlRestapi = 'http://localhost:5000/restapi'
 const csrfUrl = urlRestapi + '/getcsrf'

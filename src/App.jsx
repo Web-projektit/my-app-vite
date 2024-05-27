@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate} from "react-router-dom";
 import { AuthContext } from "./auth/Auth";
 import Private from "./auth/PrivateRoute";
 import Lomake from "./pages/Lomake";
@@ -84,6 +84,7 @@ const App = () => {
     <div className="container">
     <Routes>
         <Route exact path="/" element={<Etusivu/>} />
+        <Route path="/index.html" element={<Navigate to="/" />} />
         <Route path="/lomake" element={<Lomake/>} />
         <Route path="/notes" element={<Private><Notes/></Private>} />
         <Route path="/notes/:id" element={<Muistiinpano/>} />
