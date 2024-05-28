@@ -27,8 +27,8 @@ jobs:
       - name: Prepare deployment package
         run: |
           mkdir -p deploy
-          cp -r dist deploy/
-          cp -r node_modules deploy/
+          if [ -d "dist" ]; then cp -r dist deploy/; fi
+          if [ -d "node_modules" ]; then cp -r node_modules deploy/; fi
           cp package.json deploy/
           cp package-lock.json deploy/
           cd deploy
