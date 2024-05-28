@@ -1,11 +1,12 @@
 import axios from 'axios'
 let { origin,host,hostname,port,protocol,href } = window.location
-console.log(`window.location,origin:${origin},host:${host},hostname:${hostname},port:${port},protocol:${protocol},href:${href}`)
-let base = (port && port === '5173') ? '' : '/react-sovellusmalli-ii'
+const isAzure = hostname.includes('azurewebsites.net');
+console.log(`window.location,origin:${origin},host:${host},hostname:${hostname},port:${port},protocol:${protocol},href:${href},isAzure:${isAzure}`)
+let base = (port && port === '5173' || isAzure) ? '' : '/react-sovellusmalli-ii'
 console.log('base:',base)
 let basename = base
 const url = 'http://localhost:3001/notes'
-const urlRestapi = 'http://localhost:5000/restapi'
+const urlRestapi = (isAzure) ? 'https://flask-sovellusmalli-ii.azurewebsites.net' : 'http://localhost:5000/restapi'
 const csrfUrl = urlRestapi + '/getcsrf'
 const signupUrl = urlRestapi + '/register'
 const loginUrl = urlRestapi + '/login'
