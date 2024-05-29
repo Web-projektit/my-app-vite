@@ -6,7 +6,7 @@ let base = (port && port === '5173' || isAzure) ? '' : '/react-sovellusmalli-ii'
 console.log('base:',base)
 let basename = base
 const url = 'http://localhost:3001/notes'
-const urlRestapi = (isAzure) ? 'https://flask-sovellusmalli-ii.azurewebsites.net' : 'http://localhost:5000/restapi'
+const urlRestapi = (isAzure) ? 'https://flask-sovellusmalli.azurewebsites.net/restapi' : 'http://localhost:5000/restapi'
 const csrfUrl = urlRestapi + '/getcsrf'
 const signupUrl = urlRestapi + '/register'
 const loginUrl = urlRestapi + '/login'
