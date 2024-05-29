@@ -71,7 +71,7 @@ const csrfFetch = () => fetch(csrfUrl, {credentials: "include"})
 
 const confirmFetch = token => 
     fetch(confirmUrl,{
-        credentials:'include',
+        credentials:'same-origin',
         headers:{"authorization":`bearer ${token}`}
         })
     .then(response => {
@@ -87,7 +87,7 @@ const confirmFetch = token =>
 
 
 const closeFetch = token => fetch(closeUrl,{
-    credentials:'include',
+    credentials:'same-origin',
     headers:{"authorization":`bearer ${token}`}
     })
   
@@ -155,7 +155,8 @@ function useGetData({ url,authTokens }) {
           let message = data.message
           setError(message)
           }
-        else if (data?.status === 'ok' && data.data) { 
+        else if (data?.status === 'ok' && data.data) {
+          console.log("useGetData:",data.data) 
           setData(data.data)
           }
         })
@@ -173,12 +174,24 @@ return { dataLoading,data,error,clear };
 }
 
 const useGetCsrf = () => {
+  /* Huom. credentials: 'include' ei tässä tarvita, koska
+     koska autentikointiin käytetään Authorizaton-headeriä.
+     Sen määrittäminen jontaa selaimen vaatimaan 
+     Access-Control-Allow-Credentials: true -headerin
+     läsnäoloa vastauksessa.  Toisaalta palvelin saattaa
+     jättää sen lisäämättä CORS-asetuksesta huolimatta, 
+     jos se ei havaitse evästeitä tai http-tunnuksia kutsussa. 
+
+     Näin ollen CORS-virhe voidaan eliminoida jättämällä
+     credentials-ominaisuus pois tai asettamalla palvelin
+     vastaamaan Access-Control-Allow-Credentials: true -headerilla.
+  */
   const [csrfToken, setCsrfToken] = useState('');
   const [csrfLoading, setCsrfLoading] = useState(false);
   const [csrfError, setCsrfError] = useState(null);
   useEffect(() => {
     setCsrfLoading(true);
-    fetch(csrfUrl, { credentials: 'include' }) // Ensure cookies are sent 
+    fetch(csrfUrl, { credentials: 'same-origin' }) // Ensure cookies are sent 
     .then(response => {
       if (!response.ok) {
         throw new Error('Verkkovirhe CSRF-tokenin haussa');
@@ -224,7 +237,7 @@ function useSaveData({ url,authTokens }) {
           "X-CSRFToken": csrfToken,
           ...header
           },
-      credentials:'include', // Include cookies if needed for sessions
+      credentials:'same-origin', // Include cookies if needed for sessions
       body: JSON.stringify(dataSave)
       })
     .then(response => {
@@ -286,7 +299,7 @@ function useFormSubmit({url, csrfUrl, authTokens, setError}) {
     console.log('useFormSubmit,url:',url,'csrfUrl:',csrfUrl,',authTokens:',authTokens,',csrfToken:',csrfToken)  
   
     useEffect(() => {  
-      fetch(csrfUrl, { credentials: 'include' }) // Ensure cookies are sent
+      fetch(csrfUrl, { credentials: 'same-origin' }) // Ensure cookies are sent
         .then(response => setCsrfToken(response.headers.get("X-CSRFToken")))
         .catch(err => {
             let message = 'CSRF-tokenin haku epäonnistui.'
@@ -319,7 +332,7 @@ function useFormSubmit({url, csrfUrl, authTokens, setError}) {
                 "X-CSRFToken": csrfToken,
                 ...header
             },
-            credentials:'include', // Include cookies if needed for sessions
+            credentials:'same-origin', // Include cookies if needed for sessions
             body: JSON.stringify(data)
         })
         .then(response => {
