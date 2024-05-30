@@ -6,7 +6,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import { urlRestapi, useGetData, useSaveData } from '../yhteydet'
 import { useAuth } from './Auth'
 // import User from '../components/User'
-import UserPieChart from '../components/Pie'
+import { UserPieChart,UserBarChart } from '../components/Pie'
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 // import 'ag-grid-community/styles/ag-theme-material.css';
@@ -127,11 +127,19 @@ return (
     severity="success">
     {saveSuccess}
     </Alert>}
-    <div style={{ width: '25vw' }}>
+    <div style={{ width:'60vw', display: 'flex',height:'200px', gap:'20px' }}>
+    <div style={{ width: '25vw', flex:1 }}>
     {data && <UserPieChart
     activeUsers={data.filter(user => user.active).length}
     inactiveUsers={data.filter(user => !user.active).length}
     />}
+    </div>
+    <div style={{ width: '25vw',flex:1 }}>
+    {data && <UserBarChart 
+    activeUsers={data.filter(user => user.active).length}
+    inactiveUsers={data.filter(user => !user.active).length}
+    />}
+    </div>
     </div>
     </>
     )  
