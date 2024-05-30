@@ -1,12 +1,14 @@
 import axios from 'axios'
+const credentials = 'include'
 let { origin,host,hostname,port,protocol,href } = window.location
 const isAzure = hostname.includes('azurewebsites.net');
 console.log(`window.location,origin:${origin},host:${host},hostname:${hostname},port:${port},protocol:${protocol},href:${href},isAzure:${isAzure}`)
 let base = (port && port === '5173' || isAzure) ? '' : '/react-sovellusmalli-ii'
-console.log('base:',base)
 let basename = base
+let restapi = 'http://' + hostname + ':5000' + '/restapi'
+console.log('base:',base,'restapi:',restapi)
 const url = 'http://localhost:3001/notes'
-const urlRestapi = (isAzure) ? 'https://flask-sovellusmalli.azurewebsites.net/restapi' : 'http://localhost:5000/restapi'
+const urlRestapi = (isAzure) ? 'https://flask-sovellusmalli.azurewebsites.net/restapi' : restapi
 const csrfUrl = urlRestapi + '/getcsrf'
 const signupUrl = urlRestapi + '/register'
 const loginUrl = urlRestapi + '/login'
@@ -66,12 +68,12 @@ const deleteNote = id => {
     return promise.then(response => response.json())
     }
 
-const csrfFetch = () => fetch(csrfUrl, {credentials: "include"})
+const csrfFetch = () => fetch(csrfUrl, {credentials: credentials})
 
 
 const confirmFetch = token => 
     fetch(confirmUrl,{
-        credentials:'same-origin',
+        credentials:credentials,
         headers:{"authorization":`bearer ${token}`}
         })
     .then(response => {
@@ -87,7 +89,7 @@ const confirmFetch = token =>
 
 
 const closeFetch = token => fetch(closeUrl,{
-    credentials:'same-origin',
+    credentials:credentials,
     headers:{"authorization":`bearer ${token}`}
     })
   
@@ -191,7 +193,7 @@ const useGetCsrf = () => {
   const [csrfError, setCsrfError] = useState(null);
   useEffect(() => {
     setCsrfLoading(true);
-    fetch(csrfUrl, { credentials: 'same-origin' }) // Ensure cookies are sent 
+    fetch(csrfUrl, { credentials: credentials }) // Ensure cookies are sent 
     .then(response => {
       if (!response.ok) {
         throw new Error('Verkkovirhe CSRF-tokenin haussa');
@@ -237,7 +239,7 @@ function useSaveData({ url,authTokens }) {
           "X-CSRFToken": csrfToken,
           ...header
           },
-      credentials:'same-origin', // Include cookies if needed for sessions
+      credentials:credentials, // Include cookies if needed for sessions
       body: JSON.stringify(dataSave)
       })
     .then(response => {
@@ -299,7 +301,7 @@ function useFormSubmit({url, csrfUrl, authTokens, setError}) {
     console.log('useFormSubmit,url:',url,'csrfUrl:',csrfUrl,',authTokens:',authTokens,',csrfToken:',csrfToken)  
   
     useEffect(() => {  
-      fetch(csrfUrl, { credentials: 'same-origin' }) // Ensure cookies are sent
+      fetch(csrfUrl, { credentials: credentials }) // Ensure cookies are sent
         .then(response => setCsrfToken(response.headers.get("X-CSRFToken")))
         .catch(err => {
             let message = 'CSRF-tokenin haku epäonnistui.'
@@ -330,9 +332,10 @@ function useFormSubmit({url, csrfUrl, authTokens, setError}) {
             headers: {
                 "Content-Type": 'application/json',
                 "X-CSRFToken": csrfToken,
+                //"X-Csrftoken": csrfToken,
                 ...header
             },
-            credentials:'same-origin', // Include cookies if needed for sessions
+            credentials: credentials, // Include cookies if needed for sessions
             body: JSON.stringify(data)
         })
         .then(response => {
