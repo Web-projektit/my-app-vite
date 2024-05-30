@@ -5,7 +5,7 @@ const isAzure = hostname.includes('azurewebsites.net');
 console.log(`window.location,origin:${origin},host:${host},hostname:${hostname},port:${port},protocol:${protocol},href:${href},isAzure:${isAzure}`)
 let base = (port && port === '5173' || isAzure) ? '' : '/react-sovellusmalli-ii'
 let basename = base
-let restapi = 'http://' + hostname + ':5000' + '/restapi'
+let restapi = '//' + hostname + ':5000' + '/restapi'
 console.log('base:',base,'restapi:',restapi)
 const url = 'http://localhost:3001/notes'
 const urlRestapi = (isAzure) ? 'https://flask-sovellusmalli.azurewebsites.net/restapi' : restapi
